@@ -1,57 +1,93 @@
-from picamera2 import Picamera2
-import socket
-import time
-from PIL import Image
-import io
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
 
-class SimpleBroadcaster:
-    def __init__(self, broadcast_ip='10.22.116.65', port=5000, width=640, height=480):
-        # Setup UDP socket for broadcasting
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        self.address = (broadcast_ip, port)
+import asyncio
+from sphero_sdk import SpheroRvrAsync
+from sphero_sdk import SerialAsyncDal
+from sphero_sdk import RvrStreamingServices
 
-        # Setup camera
-        self.camera = Picamera2()
-        self.camera.configure(self.camera.create_preview_configuration(
-            main={"size": (width, height), "format": "RGB888"},  # Specify RGB format
-            raw={"size": (width, height)}
-        ))
 
-    def start(self):
-        self.camera.start()
-        print(f"Broadcasting to {self.address}")
+loop = asyncio.get_event_loop()
 
-        try:
-            while True:
-                # Capture frame
-                frame = self.camera.capture_array()
+rvr = SpheroRvrAsync(
+    dal=SerialAsyncDal(
+        loop
+    )
+)
 
-                # Convert to PIL Image and ensure RGB mode
-                img = Image.fromarray(frame, 'RGB')  # Specify RGB mode
 
-                # Convert to JPEG
-                buffer = io.BytesIO()
-                img.save(buffer, format='JPEG', quality=50)
-                jpeg_data = buffer.getvalue()
+async def imu_handler(imu_data):
+    print('IMU data response: ', imu_data)
 
-                # Send frame size first
-                self.sock.sendto(len(jpeg_data).to_bytes(4, 'big'), self.address)
 
-                # Send frame in chunks of 64KB
-                chunk_size = 64000
-                for i in range(0, len(jpeg_data), chunk_size):
-                    chunk = jpeg_data[i:i + chunk_size]
-                    self.sock.sendto(chunk, self.address)
+async def color_detected_handler(color_detected_data):
+    print('Color detection data response: ', color_detected_data)
 
-                time.sleep(1/30)  # 15fps
 
-        except KeyboardInterrupt:
-            print("Stopping broadcast...")
-        finally:
-            self.camera.stop()
-            self.sock.close()
+async def accelerometer_handler(accelerometer_data):
+    print('Accelerometer data response: ', accelerometer_data)
 
-if __name__ == "__main__":
-    broadcaster = SimpleBroadcaster()
-    broadcaster.start()
+
+async def ambient_light_handler(ambient_light_data):
+    print('Ambient light data response: ', ambient_light_data)
+
+async def encoder_handler(encoder_data):
+    print('Encoder data response: ', encoder_data)
+
+
+async def main():
+    """ This program demonstrates how to enable multiple sensors to stream.
+    """
+
+    await rvr.wake()
+
+    # Give RVR time to wake up
+    await asyncio.sleep(2)
+
+    await rvr.sensor_control.add_sensor_data_handler(
+        service=RvrStreamingServices.imu,
+        handler=imu_handler
+    )
+    await rvr.sensor_control.add_sensor_data_handler(
+        service=RvrStreamingServices.color_detection,
+        handler=color_detected_handler
+    )
+    await rvr.sensor_control.add_sensor_data_handler(
+        service=RvrStreamingServices.accelerometer,
+        handler=accelerometer_handler
+    )
+    await rvr.sensor_control.add_sensor_data_handler(
+        service=RvrStreamingServices.ambient_light,
+        handler=ambient_light_handler
+    )
+    await rvr.sensor_control.add_sensor_data_handler(
+        service=RvrStreamingServices.encoders,
+        handler=encoder_handler
+    )
+
+    await rvr.sensor_control.start(interval=250)
+
+    # The asyncio loop will run forever to allow infinite streaming.
+
+
+if __name__ == '__main__':
+    try:
+        asyncio.ensure_future(
+            main()
+        )
+        loop.run_forever()
+
+    except KeyboardInterrupt:
+        print('\nProgram terminated with keyboard interrupt.')
+
+        loop.run_until_complete(
+            asyncio.gather(
+                rvr.sensor_control.clear(),
+                rvr.close()
+            )
+        )
+
+    finally:
+        if loop.is_running():
+            loop.close()
