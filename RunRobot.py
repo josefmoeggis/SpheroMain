@@ -44,7 +44,7 @@ class SimpleBroadcaster:
                     chunk = jpeg_data[i:i + chunk_size]
                     self.sock.sendto(chunk, self.address)
 
-                time.sleep(1/30)  # 30fps
+                time.sleep(1/15)  # 15fps
 
         except KeyboardInterrupt:
             print("Stopping broadcast...")
