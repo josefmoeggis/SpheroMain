@@ -5,7 +5,7 @@ from PIL import Image
 import io
 
 class SimpleBroadcaster:
-    def __init__(self, broadcast_ip='255.255.255.255', port=5000, width=640, height=480):
+    def __init__(self, broadcast_ip='10.22.116.65', port=5000, width=640, height=480):
         # Setup UDP socket for broadcasting
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
