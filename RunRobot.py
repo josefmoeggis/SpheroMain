@@ -33,9 +33,6 @@ async def accelerometer_handler(accelerometer_data):
 async def ambient_light_handler(ambient_light_data):
     print('Ambient light data response: ', ambient_light_data)
 
-async def encoder_handler(encoder_data):
-    print('Encoder data response: ', encoder_data)
-
 async def main():
     try:
         print("Starting main routine...")
@@ -47,7 +44,6 @@ async def main():
 
         print("Setting up sensor handlers...")
 
-        # Enable each sensor with error handling
         try:
             await rvr.sensor_control.add_sensor_data_handler(
                 service=RvrStreamingServices.imu,
@@ -73,17 +69,11 @@ async def main():
             )
             print("Ambient light handler added")
 
-            await rvr.sensor_control.add_sensor_data_handler(
-                service=RvrStreamingServices.encoders,
-                handler=encoder_handler
-            )
-            print("Encoder handler added")
-
             print("Starting sensor streaming...")
             await rvr.sensor_control.start(interval=250)
             print("Sensor streaming started")
 
-            # Let's also add a simple drive command to make sure the RVR is responsive
+            # Add a simple drive command to make sure the RVR is responsive
             await rvr.drive_control.roll_start(speed=0, heading=0)
             print("Drive control initialized")
 
