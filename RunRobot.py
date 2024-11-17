@@ -39,7 +39,7 @@ class SimpleBroadcaster:
                 self.sock.sendto(len(jpeg_data).to_bytes(4, 'big'), self.address)
 
                 # Send frame in chunks of 64KB
-                chunk_size = 64000
+                chunk_size = 128000
                 for i in range(0, len(jpeg_data), chunk_size):
                     chunk = jpeg_data[i:i + chunk_size]
                     self.sock.sendto(chunk, self.address)
