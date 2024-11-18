@@ -14,7 +14,7 @@ class SimpleBroadcaster:
         # Setup camera
         self.camera = Picamera2()
         self.camera.configure(self.camera.create_preview_configuration(
-            main={"size": (width, height), "format": "RGB888"},  # Specify RGB format
+            main={"size": (width, height), "format": "RGB565"},  # Specify RGB format
             raw={"size": (width, height)}
         ))
 
