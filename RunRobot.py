@@ -28,7 +28,7 @@ class SimpleBroadcaster:
                 frame = self.camera.capture_array()
 
                 # Convert to PIL Image and ensure RGB mode
-                img = Image.fromarray(frame, 'RGB')  # Specify RGB mode
+                img = Image.fromarray(frame)  # Specify RGB mode
 
                 # Convert to JPEG
                 buffer = io.BytesIO()
