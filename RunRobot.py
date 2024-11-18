@@ -1,110 +1,56 @@
-import os
-import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
+from picamera2 import Picamera2
+import socket
+import time
+from PIL import Image
+import io
 
-import asyncio
-from sphero_sdk import SpheroRvrAsync
-from sphero_sdk import SerialAsyncDal
-from sphero_sdk import RvrStreamingServices
+class SimpleBroadcaster:
+    def __init__(self, broadcast_ip='10.22.116.65', port=5000, width=320, height=240):
+        # Setup UDP socket for broadcasting
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        self.address = (broadcast_ip, port)
 
-loop = asyncio.get_event_loop()
+        # Setup camera
+        self.camera = Picamera2()
+        self.camera.configure(self.camera.create_preview_configuration(
+            main={"size": (width, height), "format": "RGB888"},  # Specify RGB format
+            raw={"size": (width, height)}
+        ))
 
-try:
-    rvr = SpheroRvrAsync(
-        dal=SerialAsyncDal(
-            loop
-        )
-    )
-    print("RVR initialized successfully")
-except Exception as e:
-    print(f"Error initializing RVR: {e}")
-    sys.exit(1)
-
-async def imu_handler(imu_data):
-    print('IMU data response: ', imu_data)
-
-async def color_detected_handler(color_detected_data):
-    print('Color detection data response: ', color_detected_data)
-
-async def accelerometer_handler(accelerometer_data):
-    print('Accelerometer data response: ', accelerometer_data)
-
-async def ambient_light_handler(ambient_light_data):
-    print('Ambient light data response: ', ambient_light_data)
-
-async def main():
-    try:
-        print("Starting main routine...")
-        await rvr.wake()
-        print("RVR awakened")
-
-        # Give RVR time to wake up
-        await asyncio.sleep(2)
-
-        print("Setting up sensor handlers...")
+    def start(self):
+        self.camera.start()
+        print(f"Broadcasting to {self.address}")
 
         try:
-            await rvr.sensor_control.add_sensor_data_handler(
-                service=RvrStreamingServices.imu,
-                handler=imu_handler
-            )
-            print("IMU sensor handler added")
+            while True:
+                # Capture frame
+                frame = self.camera.capture_array()
 
-            await rvr.sensor_control.add_sensor_data_handler(
-                service=RvrStreamingServices.color_detection,
-                handler=color_detected_handler
-            )
-            print("Color detection handler added")
+                # Convert to PIL Image and ensure RGB mode
+                img = Image.fromarray(frame, 'RGB')  # Specify RGB mode
 
-            await rvr.sensor_control.add_sensor_data_handler(
-                service=RvrStreamingServices.accelerometer,
-                handler=accelerometer_handler
-            )
-            print("Accelerometer handler added")
+                # Convert to JPEG
+                buffer = io.BytesIO()
+                img.save(buffer, format='JPEG', quality=50)
+                jpeg_data = buffer.getvalue()
 
-            await rvr.sensor_control.add_sensor_data_handler(
-                service=RvrStreamingServices.ambient_light,
-                handler=ambient_light_handler
-            )
-            print("Ambient light handler added")
+                # Send frame size first
+                self.sock.sendto(len(jpeg_data).to_bytes(4, 'big'), self.address)
 
-            print("Starting sensor streaming...")
-            await rvr.sensor_control.start(interval=250)
-            print("Sensor streaming started")
+                chunk_size = 64000
+                for i in range(0, len(jpeg_data), chunk_size):
+                    chunk = jpeg_data[i:i + chunk_size]
+                    self.sock.sendto(chunk, self.address)
 
-            # Add a simple drive command to make sure the RVR is responsive
-            await rvr.drive_control.roll_start(speed=0, heading=0)
-            print("Drive control initialized")
+                time.sleep(1/30)
 
-        except Exception as e:
-            print(f"Error setting up sensors: {e}")
-            return
+        except KeyboardInterrupt:
+            print("Stopping broadcast...")
+        finally:
+            self.camera.stop()
+            self.sock.close()
 
-    except Exception as e:
-        print(f"Error in main routine: {e}")
-
-if __name__ == '__main__':
-    try:
-        print("Starting program...")
-        asyncio.ensure_future(
-            main()
-        )
-        print("Entering main loop...")
-        loop.run_forever()
-
-    except KeyboardInterrupt:
-        print('\nProgram terminated with keyboard interrupt.')
-        loop.run_until_complete(
-            asyncio.gather(
-                rvr.sensor_control.clear(),
-                rvr.close()
-            )
-        )
-
-    except Exception as e:
-        print(f"Unexpected error: {e}")
-
-    finally:
-        if loop.is_running():
-            loop.close()
+if __name__ == "__main__":
+    broadcaster = SimpleBroadcaster()
+    broadcaster.start()
