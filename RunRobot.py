@@ -5,7 +5,7 @@ from PIL import Image
 import io
 
 class SimpleBroadcaster:
-    def __init__(self, broadcast_ip='10.22.116.65', port=5000, width=640, height=480):
+    def __init__(self, broadcast_ip='10.22.116.65', port=5000, width=320, height=240):
         # Setup UDP socket for broadcasting
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
@@ -14,7 +14,7 @@ class SimpleBroadcaster:
         # Setup camera
         self.camera = Picamera2()
         self.camera.configure(self.camera.create_preview_configuration(
-            main={"size": (width, height), "format": "RGB888"},  # Specify RGB format
+            main={"size": (width, height), "format": "ARGB8888"},  # Specify RGB format
             raw={"size": (width, height)}
         ))
 
