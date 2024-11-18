@@ -14,7 +14,7 @@ class SimpleBroadcaster:
         # Setup camera
         self.camera = Picamera2()
         self.camera.configure(self.camera.create_preview_configuration(
-            main={"size": (width, height), "format": "ARGB8888"},  # Specify RGB format
+            main={"size": (width, height), "format": "RGB888"},  # Specify RGB format
             raw={"size": (width, height)}
         ))
 
@@ -28,7 +28,7 @@ class SimpleBroadcaster:
                 frame = self.camera.capture_array()
 
                 # Convert to PIL Image and ensure RGB mode
-                img = Image.fromarray(frame)  # Specify RGB mode
+                img = Image.fromarray(frame, 'RGB')  # Specify RGB mode
 
                 # Convert to JPEG
                 buffer = io.BytesIO()
