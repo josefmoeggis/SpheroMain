@@ -47,7 +47,7 @@ def process_command(data):
         print(f"Error processing command: {e}")
 
 def run_client():
-    while True:  # Keep running until manually stopped
+    while True:
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.connect((HOST, PORT))
@@ -64,7 +64,7 @@ def run_client():
                         buffer += chunk
 
                         # Process complete messages
-                        if len(buffer) >= 4:  # Assuming messages have a minimum size
+                        if len(buffer) >= 4:  # Min størrlse msg
                             process_command(buffer)
                             buffer = b''
 
