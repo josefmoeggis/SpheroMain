@@ -1,56 +1,71 @@
-from picamera2 import Picamera2
+# client.py
+from pickletools import uint8
+
+from flatbuffers import flexbuffers as flex
 import socket
 import time
-from PIL import Image
-import io
+from sphero_sdk import SpheroRvrObserver
+from sphero_sdk import RawMotorModesEnum
 
-class SimpleBroadcaster:
-    def __init__(self, broadcast_ip='10.22.116.65', port=5000, width=320, height=240):
-        # Setup UDP socket for broadcasting
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        self.address = (broadcast_ip, port)
+HOST = "10.22.22.139"
+PORT = 9090
 
-        # Setup camera
-        self.camera = Picamera2()
-        self.camera.configure(self.camera.create_preview_configuration(
-            main={"size": (width, height), "format": "RGB888"},  # Specify RGB format
-            raw={"size": (width, height)}
-        ))
+rvr = SpheroRvrObserver()
+rvr.wake()
 
-    def start(self):
-        self.camera.start()
-        print(f"Broadcasting to {self.address}")
+# Give RVR time to wake up
+time.sleep(2)
 
+def run_client():
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
+            s.connect((HOST, PORT))
+
+            # Receive response
+            data = b''
             while True:
-                # Capture frame
-                frame = self.camera.capture_array()
+                chunk = s.recv(1024)
+                if not chunk:
+                    break
+                data += chunk
 
-                # Convert to PIL Image and ensure RGB mode
-                img = Image.fromarray(frame, 'RGB')  # Specify RGB mode
+            # Unpack the response
+            try:
+                root = flex.GetRoot(data)
+                response_dict = root.Value
+                # Access value as a dictionary using Value property
+                left_mode = response_dict['leftMode']
+                left_speed = response_dict['leftSpeed']
+                right_mode = response_dict['rightMode']
+                right_speed = response_dict['rightSpeed']
+                servo1 = response_dict['cameraYaw']
+                servo2 = response_dict['cameraPitch']
+                heading_mode = response_dict['headingMode']
+                speed = response_dict['speed']
+                heading = response_dict['heading']
+                flags = response_dict['flags']
 
-                # Convert to JPEG
-                buffer = io.BytesIO()
-                img.save(buffer, format='JPEG', quality=50)
-                jpeg_data = buffer.getvalue()
+                if heading_mode:
+                    rvr.drive_with_heading(speed, heading, flags)
+                else:
+                    rvr.raw_motors(
+                        left_mode=uint8(left_mode),
+                        left_duty_cycle=uint8(left_speed),  # Valid duty cycle range is 0-255
+                        right_mode=right_mode,
+                        right_duty_cycle=right_speed  # Valid duty cycle range is 0-255
+                    )
 
-                # Send frame size first
-                self.sock.sendto(len(jpeg_data).to_bytes(4, 'big'), self.address)
+                print(f'Right: {right_speed}, Left: {left_speed}, servo1: {servo1}, servo2: {servo2}, left_mode: {left_mode}, right_mode: {right_mode}, headingMode: {heading_mode}, speed: {speed}, heading: {heading}')
 
-                chunk_size = 64000
-                for i in range(0, len(jpeg_data), chunk_size):
-                    chunk = jpeg_data[i:i + chunk_size]
-                    self.sock.sendto(chunk, self.address)
+            except Exception as e:
+                print(f"Error unpacking response: {e}")
+                print(f"Raw received data: {data.hex()}")
 
-                time.sleep(1/30)
+        except Exception as e:
+            print(f"Error unpacking response: {e}")
 
-        except KeyboardInterrupt:
-            print("Stopping broadcast...")
-        finally:
-            self.camera.stop()
-            self.sock.close()
+
 
 if __name__ == "__main__":
-    broadcaster = SimpleBroadcaster()
-    broadcaster.start()
+    run_client()
+    time.sleep(0.01)
