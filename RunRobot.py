@@ -46,6 +46,7 @@ def run_client():
         if heading_mode:
             rvr.drive_with_heading(speed, heading, flags)
         else:
+            print('running')
             rvr.raw_motors(
                 left_mode=left_mode,
                 left_duty_cycle=left_speed,  # Valid duty cycle range is 0-255
