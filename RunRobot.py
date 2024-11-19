@@ -45,8 +45,17 @@ def run_client():
                 heading = response_dict['heading']
                 flags = response_dict['flags']
 
+                if heading_mode:
+                    rvr.drive_with_heading(speed, heading, flags)
+                else:
+                    rvr.raw_motors(
+                        left_mode=uint8(left_mode),
+                        left_duty_cycle=uint8(left_speed),  # Valid duty cycle range is 0-255
+                        right_mode=right_mode,
+                        right_duty_cycle=right_speed  # Valid duty cycle range is 0-255
+                    )
+
                 print(f'Right: {right_speed}, Left: {left_speed}, servo1: {servo1}, servo2: {servo2}, left_mode: {left_mode}, right_mode: {right_mode}, headingMode: {heading_mode}, speed: {speed}, heading: {heading}')
-                return(left_mode, left_speed, right_mode, right_speed, servo1, servo2, heading_mode, speed, heading, flags)
 
             except Exception as e:
                 print(f"Error unpacking response: {e}")
@@ -58,16 +67,5 @@ def run_client():
 
 
 if __name__ == "__main__":
-    left_mode, left_speed, right_mode, right_speed, servo1, servo2, heading_mode, speed, heading, flags = run_client()
-
-    if heading_mode:
-        rvr.drive_with_heading(speed, heading, flags)
-    else:
-        rvr.raw_motors(
-            left_mode=uint8(left_mode),
-            left_duty_cycle=uint8(left_speed),  # Valid duty cycle range is 0-255
-            right_mode=right_mode,
-            right_duty_cycle=right_speed  # Valid duty cycle range is 0-255
-        )
-
+    run_client()
     time.sleep(0.01)
