@@ -30,6 +30,7 @@ def process_command(data):
 
         if heading_mode:
             rvr.drive_with_heading(speed, heading, flags)
+            print('true')
         else:
             rvr.raw_motors(
                 left_mode=uint8(left_mode),
