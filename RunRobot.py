@@ -65,5 +65,6 @@ def run_client():
 
 
 if __name__ == "__main__":
-    run_client()
-    time.sleep(0.01)
+    while(True):
+        run_client()
+        time.sleep(0.01)
