@@ -12,6 +12,7 @@ class SimpleBroadcaster:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.address = (broadcast_ip, port)
+        print('intialized camera')
 
         # Setup camera
         self.camera = Picamera2()
