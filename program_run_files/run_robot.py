@@ -20,7 +20,7 @@ rvr = SpheroRvrAsync(
     )
 )
 
-HOST = '0.0.0.0'
+HOST = '10.22.116.65'
 PORT_TX = '5000'
 PORT_RX = '5001'
 async def initialize():
