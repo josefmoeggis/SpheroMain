@@ -1,7 +1,7 @@
 import qwiic_tca9548a
 import qwiic_vl53l1x
 import asyncio
-import picamera2 as Picamera2
+from picamera2 import Picamera2
 import socket
 from PIL import Image
 import io
