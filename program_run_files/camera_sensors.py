@@ -61,6 +61,7 @@ async def dist_sensor_init():
     await asyncio.sleep(.1)
     mux.disable_all()
     mux.enable_channels(1)
+    print('i got here')
     await asyncio.sleep(.1)
 
     try:
