@@ -23,40 +23,43 @@ rvr = SpheroRvrAsync(
 HOST = '10.22.116.65'
 PORT_TX = '5000'
 PORT_RX = '5001'
-async def initialize():
-    await rvr.wake()
-    mux, tof1, tof2 = await cam_sens.dist_sensor_init()
-    cam = cam_sens.SimpleBroadcaster()
-    return mux, tof1, tof2, cam
+rvr.wake()
+time.sleep(2)
+cam = cam_sens.SimpleBroadcaster()
+mux, tof1, tof2 = cam_sens.dist_sensor_init()
 
 async def main():
-    await cam.start()
+    await rvr.wake()
+    await asyncio.sleep(2)
 
-    task1 = asyncio.create_task(cam_sens.ToF_read(tof1))
-    task2 = asyncio.create_task(cam_sens.ToF_read(tof2))
-
-    task3 = asyncio.create_task(rvr.sensor_control.add_sensor_data_handler(
-        service=RvrStreamingServices.imu,
-        handler=cam_sens.imu_handler
-    ))
-    task4 = asyncio.create_task(rvr.sensor_control.add_sensor_data_handler(
-        service=RvrStreamingServices.accelerometer,
-        handler=cam_sens.accelerometer_handler
-    ))
-
-    distance1, distance2, rot, acc  = await asyncio.gather(task1, task2, task3, task4)
-
-    await com.run_tx_client(acc, rot, [distance1, distance2], HOST, PORT_TX)
-
-    control_values = await com.run_rx_client(HOST, PORT_RX)
-    await com.run_robot(control_values)
 
     await rvr.sensor_control.start(interval=250)
+
+    while True:
+
+        task1 = asyncio.create_task(cam_sens.ToF_read(tof1))
+        task2 = asyncio.create_task(cam_sens.ToF_read(tof2))
+        task3 = asyncio.create_task(rvr.sensor_control.add_sensor_data_handler(
+            service=RvrStreamingServices.imu,
+            handler=cam_sens.imu_handler
+        ))
+        task4 = asyncio.create_task(rvr.sensor_control.add_sensor_data_handler(
+            service=RvrStreamingServices.accelerometer,
+            handler=cam_sens.accelerometer_handler
+        ))
+
+        distance1, distance2, rot, acc = await asyncio.gather(task1, task2, task3, task4)
+
+
+        await com.run_tx_client(acc, rot, [distance1, distance2], HOST, PORT_TX)
+        control_values = await com.run_rx_client(HOST, PORT_RX)
+        await com.run_robot(control_values)
+
+        await asyncio.sleep(0.25)
 
 
 if __name__ == '__main__':
     try:
-        mux, tof1, tof2, cam = loop.run_until_complete(initialize())
         asyncio.ensure_future(
             main()
         )
