@@ -23,10 +23,19 @@ rvr = SpheroRvrAsync(
 HOST = '10.22.116.65'
 PORT_TX = '5000'
 PORT_RX = '5001'
-rvr.wake()
-time.sleep(2)
-cam = cam_sens.SimpleBroadcaster()
 mux, tof1, tof2 = cam_sens.dist_sensor_init()
+
+async def initialize():
+    print("Starting initialization...")
+    await rvr.wake()
+    await asyncio.sleep(2)
+
+    # Initialize sensors
+    mux, tof1, tof2 = await cam_sens.dist_sensor_init()
+    cam = cam_sens.SimpleBroadcaster()
+    await cam.start()
+
+    return mux, tof1, tof2, cam
 
 async def main():
     await rvr.wake()
@@ -60,10 +69,9 @@ async def main():
 
 if __name__ == '__main__':
     try:
-        asyncio.ensure_future(
-            main()
-        )
-        loop.run_forever()
+        mux, tof1, tof2, cam = loop.run_until_complete(initialize())
+
+        loop.run_until_complete(main(mux, tof1, tof2, cam))
 
 
     except KeyboardInterrupt:
