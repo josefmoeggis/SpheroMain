@@ -36,32 +36,30 @@ async def initialize():
 
     return mux, tof1, tof2, cam
 
-
-async def sensor_control_loop(mux, tof1, tof2):
-    await rvr.sensor_control.start(interval=250)
-    while True:
-        distance1, distance2, rot, acc = await asyncio.gather(
-            cam_sens.ToF_read(tof1),
-            cam_sens.ToF_read(tof2),
-            rvr.sensor_control.add_sensor_data_handler(
-                service=RvrStreamingServices.imu,
-                handler=cam_sens.imu_handler),
-            rvr.sensor_control.add_sensor_data_handler(
-                service=RvrStreamingServices.accelerometer,
-                handler=cam_sens.accelerometer_handler)
-        )
-        await com.run_tx_client(acc, rot, [distance1, distance2], HOST, PORT_TX)
-
-        control_values = await com.run_rx_client(HOST, PORT_RX)
-        await com.run_robot(control_values)
-        await asyncio.sleep(0.25)
-
 async def main(mux, tof1, tof2, cam):
-    tasks = [
-        cam.start(),  # Camera loop runs continuously
-        sensor_control_loop(mux, tof1, tof2)  # New function for sensor/control loop
-    ]
-    await asyncio.gather(*tasks)
+    camera_task = asyncio.create_task(cam.start())
+
+    # Main sensor/control loop
+    await rvr.sensor_control.start(interval=250)
+    try:
+        while True:
+            distance1, distance2, rot, acc = await asyncio.gather(
+                cam_sens.ToF_read(tof1),
+                cam_sens.ToF_read(tof2),
+                rvr.sensor_control.add_sensor_data_handler(
+                    service=RvrStreamingServices.imu,
+                    handler=cam_sens.imu_handler),
+                rvr.sensor_control.add_sensor_data_handler(
+                    service=RvrStreamingServices.accelerometer,
+                    handler=cam_sens.accelerometer_handler)
+            )
+            await com.run_tx_client(acc, rot, [distance1, distance2], HOST, PORT_TX)
+            control_values = await com.run_rx_client(HOST, PORT_RX)
+            await com.run_robot(control_values)
+            await asyncio.sleep(0.25)
+    except Exception as e:
+        camera_task.cancel()
+        raise e
 
 
 if __name__ == '__main__':
