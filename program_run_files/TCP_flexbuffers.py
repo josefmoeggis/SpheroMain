@@ -3,6 +3,7 @@ import socket
 import asyncio
 
 async def run_tx_client(acc_data, rot_data, dist_data, HOST, PORT):
+    print('running tx')
     builder = flex.Builder()
     # Pack
     with builder.Map():
@@ -32,6 +33,7 @@ async def run_tx_client(acc_data, rot_data, dist_data, HOST, PORT):
             print(f"Error unpacking response: {e}")
 
 async def run_robot(response_dict, rvr):
+    print('running robot')
     try:
         left_mode = response_dict['leftMode']
         left_speed = response_dict['leftSpeed']
@@ -65,6 +67,7 @@ async def run_robot(response_dict, rvr):
 
 
 async def run_rx_client(HOST, PORT):
+    print('running rx')
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((HOST, PORT))
@@ -84,7 +87,7 @@ async def run_rx_client(HOST, PORT):
                     if len(buffer) >= 4:  # Min størrlse msg
                         root = flex.GetRoot(buffer)
                         response_dict = root.Value
-                        # this is where the process was run if failure with modification
+
                         buffer = b''
                         return response_dict
 
