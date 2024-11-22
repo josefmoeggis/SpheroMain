@@ -72,7 +72,7 @@ def run_tx_client(acc_data, rot_data, dist_data):
 
             # Shutdown send to signal we're done sending
             s.shutdown(socket.SHUT_WR)
-
+            print('data is sent...')
         except Exception as e:
             print(f"Error unpacking response: {e}")
 
@@ -87,7 +87,7 @@ def run_client():
 
             buffer = b''
             while True:
-                print('waiting to send data...')
+                print('receiving data...')
                 chunk = s.recv(1024)
                 if not chunk:
                     break
