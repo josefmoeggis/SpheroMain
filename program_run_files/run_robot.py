@@ -37,6 +37,7 @@ async def initialize():
     return mux, tof1, tof2, cam
 
 async def run_sensor_stream(tof1, tof2):
+    print('sensor stream')
     while True:
         distance1, distance2, rot, acc = await asyncio.gather(
             cam_sens.ToF_read(tof1),
@@ -52,6 +53,7 @@ async def run_sensor_stream(tof1, tof2):
 
 
 async def run_commands():
+    print('running program')
     while True:
         control_values = await com.run_rx_client(HOST, PORT_RX)
         await com.run_robot(control_values)
