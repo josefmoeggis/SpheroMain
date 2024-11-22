@@ -58,15 +58,18 @@ def run_rx_client():
                     if not chunk:
                         break
                     buffer += chunk
-                    time.sleep(0.01)
-                    # Process complete messages
-                    if len(buffer) >= 4:  # Min størrlse msg
-                        root = flex.GetRoot(buffer)
-                        response_dict = root.Value
-                        # this is where the process was run if failure with modification
-                        buffer = 'b'
-                        return response_dict
+                    if len(buffer) >= 4:  # Minimum message size
+                        try:
+                            root = flex.GetRoot(buffer)
+                            response_dict = root.Value
+                            buffer = b''  # Reset buffer after successful processing
+                            return response_dict
+                        except flex.FlexBufferException as e:
+                            print(f"FlexBuffer parsing error: {e}")
+                            buffer = b''  # Reset on parse error
 
+                except socket.timeout:
+                    continue
                 except Exception as e:
                     print(f"Error receiving data: {e}")
                     break
