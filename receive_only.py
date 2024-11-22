@@ -5,7 +5,7 @@ import time
 from sphero_sdk import SpheroRvrObserver
 from sphero_sdk import RawMotorModesEnum
 
-HOST = "10.22.185.93"
+HOST = "10.22.22.139"
 PORT = 9090
 
 rvr = SpheroRvrObserver()
