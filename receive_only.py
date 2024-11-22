@@ -82,6 +82,8 @@ if __name__ == "__main__":
     try:
         while True:
             run_data = run_rx_client()
+            time.sleep(0.1)
             run_robot(run_data)
+            time.sleep(0.1)
     except KeyboardInterrupt:
         print("\nShutting down client...")
