@@ -41,8 +41,8 @@ async def running(tof1, tof2, manager):
         distance1, distance2, rot, acc = await asyncio.gather(
             ToF_read(tof1),
             ToF_read(tof2),
-            manager.latest_imu_data(),
-            manager.latest_acc_data(),
+            asyncio.to_thread(manager.get_latest_imu_data),
+            asyncio.to_thread(manager.get_latest_acc_data),
         )
         print(distance1, distance2, rot, acc)
 
