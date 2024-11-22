@@ -44,45 +44,44 @@ def run_robot(response_dict):
         print(f"Error processing command: {e}")
 
 def run_rx_client():
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((HOST, PORT))
+    while True:
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.connect((HOST, PORT))
 
-            # Set a timeout to avoid hanging
-            s.settimeout(0.1)
+                # Set a timeout to avoid hanging
+                s.settimeout(0.1)
 
-            buffer = b''
-            while True:
-                try:
-                    chunk = s.recv(1024)
-                    if not chunk:
-                        break
-                    buffer += chunk
-                    if len(buffer) >= 4:  # Minimum message size
-                        try:
+                buffer = b''
+                while True:
+                    try:
+                        chunk = s.recv(1024)
+                        if not chunk:
+                            break
+                        buffer += chunk
+
+                        # Process complete messages
+                        if len(buffer) >= 4:  # Min størrlse msg
                             root = flex.GetRoot(buffer)
                             response_dict = root.Value
-                            buffer = b''  # Reset buffer after successful processing
+                            # this is where the process was run if failure with modification
+                            buffer = b''
                             return response_dict
-                        except flex.FlexBufferException as e:
-                            print(f"FlexBuffer parsing error: {e}")
-                            buffer = b''  # Reset on parse error
 
-                except socket.timeout:
-                    continue
-                except Exception as e:
-                    print(f"Error receiving data: {e}")
-                    break
+                    except socket.timeout:
+                        # No data received, continue listening
+                        continue
+                    except Exception as e:
+                        print(f"Error receiving data: {e}")
+                        break
 
-    except Exception as e:
-        print(f"Connection error: {e}")
-        time.sleep(1)  # Wait before retrying connection
+        except Exception as e:
+            print(f"Connection error: {e}")
+            time.sleep(1)  # Wait before retrying connection
 
 if __name__ == "__main__":
     try:
-        while True:
-            run_data = run_rx_client()
-            if run_data:
-                run_robot(run_data)
+        run_data = run_rx_client()
+        run_robot(run_data)
     except KeyboardInterrupt:
         print("\nShutting down client...")
