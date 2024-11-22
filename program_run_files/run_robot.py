@@ -20,7 +20,7 @@ rvr = SpheroRvrAsync(
     )
 )
 
-HOST = '10.22.116.65'
+HOST = '10.22.185.93'
 PORT_TX = '5000'
 PORT_RX = '5001'
 
