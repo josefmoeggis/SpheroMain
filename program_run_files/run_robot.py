@@ -36,29 +36,41 @@ async def initialize():
 
     return mux, tof1, tof2, cam
 
-async def main(mux, tof1, tof2, cam):
-    camera_task = asyncio.create_task(cam.start())
+async def run_sensor_stream(tof1, tof2):
+    while True:
+        distance1, distance2, rot, acc = await asyncio.gather(
+            cam_sens.ToF_read(tof1),
+            cam_sens.ToF_read(tof2),
+            rvr.sensor_control.add_sensor_data_handler(
+                service=RvrStreamingServices.imu,
+                handler=cam_sens.imu_handler),
+            rvr.sensor_control.add_sensor_data_handler(
+                service=RvrStreamingServices.accelerometer,
+                handler=cam_sens.accelerometer_handler)
+        )
+        await com.run_tx_client(acc, rot, [distance1, distance2], HOST, PORT_TX)
 
-    # Main sensor/control loop
+
+async def run_commands():
+    while True:
+        control_values = await com.run_rx_client(HOST, PORT_RX)
+        await com.run_robot(control_values)
+        await asyncio.sleep(0.25)
+
+
+async def main(mux, tof1, tof2, cam):
     await rvr.sensor_control.start(interval=250)
+    camera_task = asyncio.create_task(cam.start())
+    sensor_task = asyncio.create_task(run_sensor_stream(tof1, tof2))
+    command_task = asyncio.create_task(run_commands())
     try:
-        while True:
-            distance1, distance2, rot, acc = await asyncio.gather(
-                cam_sens.ToF_read(tof1),
-                cam_sens.ToF_read(tof2),
-                rvr.sensor_control.add_sensor_data_handler(
-                    service=RvrStreamingServices.imu,
-                    handler=cam_sens.imu_handler),
-                rvr.sensor_control.add_sensor_data_handler(
-                    service=RvrStreamingServices.accelerometer,
-                    handler=cam_sens.accelerometer_handler)
-            )
-            await com.run_tx_client(acc, rot, [distance1, distance2], HOST, PORT_TX)
-            control_values = await com.run_rx_client(HOST, PORT_RX)
-            await com.run_robot(control_values)
-            await asyncio.sleep(0.25)
+        await asyncio.gather(camera_task, sensor_task, command_task)
+
+
     except Exception as e:
         camera_task.cancel()
+        sensor_task.cancel()
+        command_task.cancel()
         raise e
 
 

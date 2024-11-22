@@ -38,7 +38,6 @@ class SimpleBroadcaster:
                 img.save(buffer, format='JPEG', quality=50)
                 jpeg_data = buffer.getvalue()
 
-                # Send frame size first
                 self.sock.sendto(len(jpeg_data).to_bytes(4, 'big'), self.address)
 
                 chunk_size = 64000
