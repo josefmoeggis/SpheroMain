@@ -83,7 +83,7 @@ def run_client():
             s.connect((HOST, PORT))
 
             # Set a timeout to avoid hanging
-            s.settimeout(1)
+            s.settimeout(.1)
 
             buffer = b''
             while True:
@@ -110,7 +110,9 @@ if __name__ == "__main__":
     try:
         while True:
             run_client()
+            time.sleep(0.1)
             run_tx_client(acc_data, rot_data, dist_data)
+            time.sleep(0.1)
 
     except KeyboardInterrupt:
         print("\nShutting down client...")
