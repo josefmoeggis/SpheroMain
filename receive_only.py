@@ -64,7 +64,7 @@ def run_rx_client():
                         root = flex.GetRoot(buffer)
                         response_dict = root.Value
                         # this is where the process was run if failure with modification
-                        buffer = buffer[root.BytesRead():]
+                        buffer = 'b'
                         return response_dict
 
                 except Exception as e:
