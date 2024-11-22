@@ -5,7 +5,7 @@ import time
 from sphero_sdk import SpheroRvrObserver
 from sphero_sdk import RawMotorModesEnum
 
-HOST = "10.22.185.93"
+HOST = "10.22.22.139"
 PORT = 9090
 
 rvr = SpheroRvrObserver()
@@ -57,6 +57,7 @@ def run_rx_client(socket_connection):
                 if len(buffer) >= 4:  # Min størrlse msg
                     root = flex.GetRoot(buffer)
                     response_dict = root.Value
+                    print(response_dict)
                     # this is where the process was run if failure with modification
                     buffer = b''
                     return response_dict

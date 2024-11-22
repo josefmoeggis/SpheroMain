@@ -4,7 +4,7 @@ from flatbuffers import flexbuffers as flex
 import socket
 import time
 
-HOST = "10.22.185.93"
+HOST = "10.22.22.139"
 #HOST = "127.0.0.1"
 PORT = 9090
 
@@ -28,7 +28,7 @@ def run_tx_client(acc_data, rot_data, dist_data):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
             s.connect((HOST, PORT))
-
+            print(packed_dict)
             # Send the packed data
             s.sendall(packed_dict)
 
