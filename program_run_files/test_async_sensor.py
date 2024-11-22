@@ -37,7 +37,6 @@ async def ToF_read(tof):
 
 async def running(tof1, tof2):
     await rvr.sensor_control.start(interval=250)
-    cam
     while True:
         distance1, distance2, rot, acc = await asyncio.gather(
             ToF_read(tof1),
@@ -55,6 +54,7 @@ async def main():
     await rvr.wake()
     await asyncio.sleep(2)
     mux, tof1, tof2 = await camsen.dist_sensor_init()
+    manager = camsen.IMUManager()
     await running(tof1, tof2)
 
 

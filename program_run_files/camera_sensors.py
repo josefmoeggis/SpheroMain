@@ -99,7 +99,8 @@ async def ToF_read(tof):
 
 class IMUManager:
     def __init__(self):
-        self.latest_data = None
+        self.latest_imu_data = None
+        self.latest_acc_data = None
 
     async def imu_handler(self, imu_data):
         self.latest_data = imu_data

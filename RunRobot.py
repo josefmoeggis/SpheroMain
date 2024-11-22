@@ -14,6 +14,7 @@ time.sleep(2)  # Give RVR time to wake up
 
 def process_command(data):
     try:
+        print('waiting to receive data...')
         root = flex.GetRoot(data)
         response_dict = root.Value
 
@@ -86,6 +87,7 @@ def run_client():
 
             buffer = b''
             while True:
+                print('waiting to send data...')
                 try:
                     chunk = s.recv(1024)
                     if not chunk:
