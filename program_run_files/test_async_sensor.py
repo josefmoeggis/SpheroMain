@@ -44,7 +44,7 @@ async def running(tof1, tof2, manager):
             asyncio.to_thread(manager.get_latest_imu_data),
             asyncio.to_thread(manager.get_latest_acc_data),
         )
-        print(distance1, distance2, rot[0], acc[0])
+        print(distance1, distance2, rot, acc)
 
 async def main():
     await rvr.wake()
