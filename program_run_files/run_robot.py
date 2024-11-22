@@ -21,8 +21,8 @@ rvr = SpheroRvrAsync(
 )
 
 HOST = '10.22.185.93'
-PORT_TX = '5000'
-PORT_RX = '5001'
+PORT_TX = '5001'
+PORT_RX = '5002'
 
 async def initialize():
     print("Starting initialization...")
@@ -34,7 +34,7 @@ async def initialize():
     cam = cam_sens.SimpleBroadcaster()
     await cam.start()
 
-    return mux, tof1, tof2, cam
+    return tof1, tof2, cam
 
 async def run_sensor_stream(tof1, tof2):
     print('sensor stream')
@@ -52,35 +52,29 @@ async def run_sensor_stream(tof1, tof2):
         await com.run_tx_client(acc, rot, [distance1, distance2], HOST, PORT_TX)
 
 
-async def run_commands():
+async def run_commands(rvr):
     print('running program')
     while True:
         control_values = await com.run_rx_client(HOST, PORT_RX)
-        await com.run_robot(control_values)
+        await com.run_robot(control_values, rvr)
         await asyncio.sleep(0.25)
 
 
-async def main(mux, tof1, tof2, cam):
+async def main(tof1, tof2, cam):
     await rvr.sensor_control.start(interval=250)
-    camera_task = asyncio.create_task(cam.start())
-    sensor_task = asyncio.create_task(run_sensor_stream(tof1, tof2))
-    command_task = asyncio.create_task(run_commands())
-    try:
-        await asyncio.gather(camera_task, sensor_task, command_task)
-
-
-    except Exception as e:
-        camera_task.cancel()
-        sensor_task.cancel()
-        command_task.cancel()
-        raise e
+    tasks = [
+        asyncio.create_task(cam.start(), name="camera"),
+        asyncio.create_task(run_sensor_stream(rvr, tof1, tof2), name="sensors"),
+        asyncio.create_task(run_commands(rvr), name="commands")
+    ]
+    await asyncio.gather(*tasks)
 
 
 if __name__ == '__main__':
     try:
-        mux, tof1, tof2, cam = loop.run_until_complete(initialize())
+        tof1, tof2, cam = loop.run_until_complete(initialize())
 
-        loop.run_until_complete(main(mux, tof1, tof2, cam))
+        loop.run_until_complete(main(tof1, tof2, cam))
 
 
     except KeyboardInterrupt:
