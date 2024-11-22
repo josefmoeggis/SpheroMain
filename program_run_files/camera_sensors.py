@@ -97,8 +97,13 @@ async def ToF_read(tof):
     except Exception as e:
         print(e)
 
-async def imu_handler(imu_data):
-    return imu_data
+class IMUManager:
+    def __init__(self):
+        self.latest_data = None
 
-async def accelerometer_handler(accelerometer_data):
-    return accelerometer_data
+    async def imu_handler(self, imu_data):
+        self.latest_data = imu_data
+        return imu_data
+
+    def get_latest_data(self):
+        return self.latest_data

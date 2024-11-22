@@ -37,6 +37,7 @@ async def ToF_read(tof):
 
 async def running(tof1, tof2):
     await rvr.sensor_control.start(interval=250)
+    cam
     while True:
         distance1, distance2, rot, acc = await asyncio.gather(
             ToF_read(tof1),

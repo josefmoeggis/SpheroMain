@@ -46,41 +46,75 @@ def process_command(data):
     except Exception as e:
         print(f"Error processing command: {e}")
 
-def run_client():
-    while True:
+def run_tx_client(acc_data, rot_data, dist_data):
+    builder = flex.Builder()
+    # Pack
+    with builder.Map():
+        builder.Key('acc')
+        builder.TypedVectorFromElements(acc_data, flex.Type.FLOAT)
+
+        builder.Key('rot')
+        builder.TypedVectorFromElements(rot_data, flex.Type.FLOAT)
+
+        builder.Key('dist')
+        builder.TypedVectorFromElements(dist_data, flex.Type.FLOAT)
+
+    packed_dict = builder.Finish()
+
+
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.connect((HOST, PORT))
+            s.connect((HOST, PORT))
 
-                # Set a timeout to avoid hanging
-                s.settimeout(0.1)
+            # Send the packed data
+            s.sendall(packed_dict)
 
-                buffer = b''
-                while True:
-                    try:
-                        chunk = s.recv(1024)
-                        if not chunk:
-                            break
-                        buffer += chunk
-
-                        # Process complete messages
-                        if len(buffer) >= 4:  # Min størrlse msg
-                            process_command(buffer)
-                            buffer = b''
-
-                    except socket.timeout:
-                        # No data received, continue listening
-                        continue
-                    except Exception as e:
-                        print(f"Error receiving data: {e}")
-                        break
+            # Shutdown send to signal we're done sending
+            s.shutdown(socket.SHUT_WR)
 
         except Exception as e:
-            print(f"Connection error: {e}")
-            time.sleep(1)  # Wait before retrying connection
+            print(f"Error unpacking response: {e}")
+
+
+def run_client():
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((HOST, PORT))
+
+            # Set a timeout to avoid hanging
+            s.settimeout(0.1)
+
+            buffer = b''
+            while True:
+                try:
+                    chunk = s.recv(1024)
+                    if not chunk:
+                        break
+                    buffer += chunk
+
+                    # Process complete messages
+                    if len(buffer) >= 4:  # Min størrlse msg
+                        process_command(buffer)
+                        buffer = b''
+
+                except socket.timeout:
+                    # No data received, continue listening
+                    continue
+                except Exception as e:
+                    print(f"Error receiving data: {e}")
+                    break
+
+    except Exception as e:
+        print(f"Connection error: {e}")
+        time.sleep(1)  # Wait before retrying connection
 
 if __name__ == "__main__":
+    rot_data = [0.5, 0.5, 0.5]
+    acc_data = [0.25, 0.25, 0.25]
+    dist_data = [12.0, 12.0]
     try:
         run_client()
+        run_tx_client(acc_data, rot_data, dist_data)
+
     except KeyboardInterrupt:
         print("\nShutting down client...")
