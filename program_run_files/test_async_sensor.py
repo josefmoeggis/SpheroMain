@@ -35,15 +35,13 @@ async def ToF_read(tof):
     except Exception as e:
         print(e)
 
-async def running(tof1, tof2):
+async def running(tof1, tof2, manager):
     await rvr.sensor_control.start(interval=250)
     while True:
         distance1, distance2, rot, acc = await asyncio.gather(
             ToF_read(tof1),
             ToF_read(tof2),
-            rvr.sensor_control.add_sensor_data_handler(
-                service=RvrStreamingServices.imu,
-                handler=imu_handler),
+            manager.latest_imu_data(),
             rvr.sensor_control.add_sensor_data_handler(
                 service=RvrStreamingServices.accelerometer,
                 handler=accelerometer_handler)
@@ -55,7 +53,11 @@ async def main():
     await asyncio.sleep(2)
     mux, tof1, tof2 = await camsen.dist_sensor_init()
     manager = camsen.IMUManager()
-    await running(tof1, tof2)
+    await rvr.sensor_control.add_sensor_data_handler(
+        service=RvrStreamingServices.imu,
+        handler=manager.imu_handler
+    )
+    await running(tof1, tof2, manager)
 
 
 if __name__ == '__main__':
