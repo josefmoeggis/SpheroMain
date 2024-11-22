@@ -113,8 +113,9 @@ if __name__ == "__main__":
     acc_data = [0.25, 0.25, 0.25]
     dist_data = [12.0, 12.0]
     try:
-        run_client()
-        run_tx_client(acc_data, rot_data, dist_data)
+        while True:
+            run_client()
+            run_tx_client(acc_data, rot_data, dist_data)
 
     except KeyboardInterrupt:
         print("\nShutting down client...")
