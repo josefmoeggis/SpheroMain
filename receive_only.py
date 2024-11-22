@@ -80,8 +80,9 @@ def run_rx_client():
             time.sleep(1)  # Wait before retrying connection
 
 if __name__ == "__main__":
-    try:
-        run_data = run_rx_client()
-        run_robot(run_data)
-    except KeyboardInterrupt:
-        print("\nShutting down client...")
+    while True:
+        try:
+            run_data = run_rx_client()
+            run_robot(run_data)
+        except KeyboardInterrupt:
+            print("\nShutting down client...")
