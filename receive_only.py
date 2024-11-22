@@ -64,7 +64,7 @@ def run_rx_client():
                         root = flex.GetRoot(buffer)
                         response_dict = root.Value
                         # this is where the process was run if failure with modification
-                        buffer = b''
+                        buffer = buffer[root.BytesRead():]
                         return response_dict
 
                 except Exception as e:
@@ -79,9 +79,7 @@ if __name__ == "__main__":
     try:
         while True:
             run_data = run_rx_client()
-            print('in while loop')
-            time.sleep(0.1)
-            run_robot(run_data)
-            time.sleep(0.1)
+            if run_data:
+                run_robot(run_data)
     except KeyboardInterrupt:
         print("\nShutting down client...")
