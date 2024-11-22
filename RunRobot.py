@@ -88,23 +88,16 @@ def run_client():
             buffer = b''
             while True:
                 print('waiting to send data...')
-                try:
-                    chunk = s.recv(1024)
-                    if not chunk:
-                        break
-                    buffer += chunk
-
-                    # Process complete messages
-                    if len(buffer) >= 4:  # Min størrlse msg
-                        process_command(buffer)
-                        buffer = b''
-
-                except socket.timeout:
-                    # No data received, continue listening
-                    continue
-                except Exception as e:
-                    print(f"Error receiving data: {e}")
+                chunk = s.recv(1024)
+                if not chunk:
                     break
+                buffer += chunk
+
+                # Process complete messages
+                if len(buffer) >= 4:  # Min størrlse msg
+                    process_command(buffer)
+                    buffer = b''
+
 
     except Exception as e:
         print(f"Connection error: {e}")
