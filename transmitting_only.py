@@ -34,7 +34,7 @@ def run_tx_client(acc_data, rot_data, dist_data):
 
             # Shutdown send to signal we're done sending
             s.shutdown(socket.SHUT_WR)
-
+            print('sending...')
         except Exception as e:
             print(f"Error unpacking response: {e}")
 
