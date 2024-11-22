@@ -4,7 +4,7 @@ from flatbuffers import flexbuffers as flex
 import socket
 import time
 
-HOST = "10.22.22.139"
+HOST = "10.22.185.93"
 #HOST = "127.0.0.1"
 PORT = 9090
 
