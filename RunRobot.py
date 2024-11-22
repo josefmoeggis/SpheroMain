@@ -83,7 +83,7 @@ def run_client():
             s.connect((HOST, PORT))
 
             # Set a timeout to avoid hanging
-            s.settimeout(0.1)
+            s.settimeout(1)
 
             buffer = b''
             while True:
