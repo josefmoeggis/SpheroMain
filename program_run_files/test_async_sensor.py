@@ -42,9 +42,7 @@ async def running(tof1, tof2, manager):
             ToF_read(tof1),
             ToF_read(tof2),
             manager.latest_imu_data(),
-            rvr.sensor_control.add_sensor_data_handler(
-                service=RvrStreamingServices.accelerometer,
-                handler=accelerometer_handler)
+            manager.latest_acc_data(),
         )
         print(distance1, distance2, rot, acc)
 
@@ -57,6 +55,11 @@ async def main():
         service=RvrStreamingServices.imu,
         handler=manager.imu_handler
     )
+    await rvr.sensor_control.add_sensor_data_handler(
+        service=RvrStreamingServices.accelerometer,
+        handler=manager.acc_handler
+    )
+
     await running(tof1, tof2, manager)
 
 
