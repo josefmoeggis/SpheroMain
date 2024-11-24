@@ -46,6 +46,7 @@ async def main():
     await asyncio.sleep(2)
     mux, tof1, tof2 = await camsen.dist_sensor_init()
     manager = camsen.IMUManager()
+    await rvr.sensor_control.start(interval=250)
     await rvr.sensor_control.add_sensor_data_handler(
         service=RvrStreamingServices.imu,
         handler=manager.imu_handler
@@ -61,7 +62,6 @@ async def main():
     )
     print("Accelerometer handler added successfully")
     await asyncio.sleep(0.1)
-    await rvr.sensor_control.start(interval=250)
 
     while True:
         try:
