@@ -24,6 +24,9 @@ rvr = SpheroRvrAsync(
 async def imu_handler(imu_data):
     return imu_data
 
+async def accelerometer_handler(acc_data):
+    return acc_data
+
 async def ToF_read(tof):
     try:
         tof.start_ranging()
