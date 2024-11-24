@@ -36,14 +36,13 @@ async def ToF_read(tof):
         print(e)
 
 async def sensors(tof1, tof2, manager):
-    distance1, distance2, imu, acc = await asyncio.gather(
+    distance1, distance2, imu, = await asyncio.gather(
         ToF_read(tof1),
         ToF_read(tof2),
         asyncio.to_thread(manager.get_latest_imu_data),
-        asyncio.to_thread(manager.get_latest_acc_data),
     )
     print(acc)
-    return distance1, distance2, imu['IMU'], acc['Accelerometer']
+    return distance1, distance2, imu['IMU']
 
 async def main():
     await rvr.wake()
@@ -65,9 +64,9 @@ async def main():
 
     while True:
         try:
-            distance1, distance2, imu, acc = await sensors(tof1, tof2, manager)
+            distance1, distance2, imu = await sensors(tof1, tof2, manager)
             print(distance1, distance2, imu)
-            await com.run_tx_client(imu, acc, [distance1, distance2], HOST, PORT)
+            await com.run_tx_client(imu, imu, [distance1, distance2], HOST, PORT)
             await asyncio.sleep(0.1)
         except Exception as e:
             print(f"Error in main loop: {e}")
