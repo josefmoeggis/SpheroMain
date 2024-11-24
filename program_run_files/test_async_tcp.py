@@ -56,7 +56,7 @@ async def main():
     )
     await rvr.sensor_control.add_sensor_data_handler(
         service=RvrStreamingServices.accelerometer,
-        handler=manager.acc_handler
+        handler=manager.accelerometer_handler
     )
     await rvr.sensor_control.start(interval=250)
 
