@@ -2,7 +2,7 @@ from flatbuffers import flexbuffers as flex
 import socket
 import asyncio
 
-async def run_tx_client(acc_data, rot_data, dist_data, HOST, PORT):
+async def run_tx_client(rot_data, acc_data, dist_data, HOST, PORT):
     print('running tx')
     builder = flex.Builder()
     try:
