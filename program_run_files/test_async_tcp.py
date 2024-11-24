@@ -39,8 +39,11 @@ async def sensors(tof1, tof2, manager):
         ToF_read(tof2),
         asyncio.to_thread(manager.get_latest_imu_data),
     )
-    imu_rot = imu
-    return distance1, distance2, imu_rot
+    imu_rot_dict = imu['IMU']
+    imu_rot = [imu_rot_dict['Roll'], imu_rot_dict['Pitch'], imu_rot_dict['Yaw']]
+    imu_acc_dict = imu['Accelerometer']
+    imu_acc = [imu_acc_dict['X'], imu_acc_dict['Y'], imu_acc_dict['Z']]
+    return distance1, distance2, imu_rot, imu_acc
 
 async def main():
     await rvr.wake()
