@@ -41,7 +41,7 @@ async def sensors(tof1, tof2, manager):
         ToF_read(tof2),
         asyncio.to_thread(manager.get_latest_imu_data),
     )
-    return distance1, distance2, imu
+    return distance1, distance2, imu['IMU']
 
 async def main():
     await rvr.wake()
