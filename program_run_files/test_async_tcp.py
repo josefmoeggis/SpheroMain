@@ -51,10 +51,6 @@ async def main():
         service=RvrStreamingServices.imu,
         handler=manager.imu_handler
     )
-    await rvr.sensor_control.add_sensor_data_handler(
-        service=RvrStreamingServices.accelerometer,
-        handler=manager.acc_handler
-    )
 
     await running(tof1, tof2, manager)
 
