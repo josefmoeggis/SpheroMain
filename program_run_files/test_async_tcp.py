@@ -53,6 +53,10 @@ async def main():
         handler=manager.imu_handler
     )
     await asyncio.sleep(0.1)
+    await rvr.sensor_control.add_sensor_data_handler(
+        service=RvrStreamingServices.accelerometer,
+        handler=manager.accelerometer_handler
+    )
 
     await asyncio.sleep(0.1)
     await rvr.sensor_control.start(interval=250)
