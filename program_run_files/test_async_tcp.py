@@ -34,12 +34,13 @@ async def ToF_read(tof):
         print(e)
 
 async def sensors(tof1, tof2, manager):
-    distance1, distance2, imu, = await asyncio.gather(
+    distance1, distance2, imu = await asyncio.gather(
         ToF_read(tof1),
         ToF_read(tof2),
         asyncio.to_thread(manager.get_latest_imu_data),
     )
-    return distance1, distance2, imu['IMU']
+    imu_rot = imu['IMU']
+    return distance1, distance2, imu_rot
 
 async def main():
     await rvr.wake()
