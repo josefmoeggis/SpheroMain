@@ -21,14 +21,11 @@ rvr = SpheroRvrAsync(
 async def imu_handler(imu_data):
     return imu_data
 
-async def accelerometer_handler(accelerometer_data):
-    return accelerometer_data
-
 async def ToF_read(tof):
     try:
         tof.start_ranging()
         await asyncio.sleep(.005)
-        distance = tof.get_distance()    # Get the result of the measurement from the sensor
+        distance = tof.get_distance()
         await asyncio.sleep(.005)
         tof.stop_ranging()
         return distance
@@ -38,13 +35,12 @@ async def ToF_read(tof):
 async def running(tof1, tof2, manager):
     await rvr.sensor_control.start(interval=250)
     while True:
-        distance1, distance2, rot, acc = await asyncio.gather(
+        distance1, distance2, imu = await asyncio.gather(
             ToF_read(tof1),
             ToF_read(tof2),
             asyncio.to_thread(manager.get_latest_imu_data),
-            asyncio.to_thread(manager.get_latest_acc_data),
         )
-        print(distance1, distance2, rot['Pitch'], acc['X'])
+        print(distance1, distance2, imu)
 
 async def main():
     await rvr.wake()
@@ -54,10 +50,6 @@ async def main():
     await rvr.sensor_control.add_sensor_data_handler(
         service=RvrStreamingServices.imu,
         handler=manager.imu_handler
-    )
-    await rvr.sensor_control.add_sensor_data_handler(
-        service=RvrStreamingServices.accelerometer,
-        handler=manager.acc_handler
     )
 
     await running(tof1, tof2, manager)

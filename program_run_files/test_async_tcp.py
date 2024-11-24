@@ -32,7 +32,7 @@ async def ToF_read(tof):
     except Exception as e:
         print(e)
 
-async def running(tof1, tof2, manager):
+async def sensors(tof1, tof2, manager):
     await rvr.sensor_control.start(interval=250)
     while True:
         distance1, distance2, imu = await asyncio.gather(
@@ -40,7 +40,7 @@ async def running(tof1, tof2, manager):
             ToF_read(tof2),
             asyncio.to_thread(manager.get_latest_imu_data),
         )
-        print(distance1, distance2, imu)
+        return distance1, distance2, imu
 
 async def main():
     await rvr.wake()
@@ -52,8 +52,8 @@ async def main():
         handler=manager.imu_handler
     )
 
-    await running(tof1, tof2, manager)
-
+    distance1, distance2, imu = await sensors(tof1, tof2, manager)
+    print(distance1, distance2, imu)
 
 if __name__ == '__main__':
     try:
