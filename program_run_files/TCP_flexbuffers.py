@@ -5,25 +5,24 @@ import asyncio
 async def run_tx_client(acc_data, rot_data, dist_data, HOST, PORT):
     print('running tx')
     builder = flex.Builder()
-
-    with builder.Map():
-        builder.Key('acc')
-        builder.TypedVectorFromElements(acc_data, flex.Type.FLOAT)
-        builder.Key('rot')
-        builder.TypedVectorFromElements(rot_data, flex.Type.FLOAT)
-        builder.Key('dist')
-        builder.TypedVectorFromElements(dist_data, flex.Type.FLOAT)
-
-    packed_dict = builder.Finish()
-
     try:
+        with builder.Map():
+            builder.Key('acc')
+            builder.TypedVectorFromElements(acc_data, flex.Type.FLOAT)
+            builder.Key('rot')
+            builder.TypedVectorFromElements(rot_data, flex.Type.FLOAT)
+            builder.Key('dist')
+            builder.TypedVectorFromElements(dist_data, flex.Type.FLOAT)
+
+        packed_dict = builder.Finish()
+
         reader, writer = await asyncio.open_connection(HOST, PORT)
         writer.write(packed_dict)
         await writer.drain()
         writer.close()
         await writer.wait_closed()
     except Exception as e:
-        print(f"Error sending data: {e}")
+        print(f"Error in tx_client: {e}")
 
 async def run_robot(response_dict, rvr):
     print('running robot')

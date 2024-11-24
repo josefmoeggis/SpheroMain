@@ -55,9 +55,16 @@ async def main():
     await rvr.sensor_control.start(interval=250)
 
     while True:
-        distance1, distance2, imu = await sensors(tof1, tof2, manager)
-        print(distance1, distance2, imu)
-        await com.run_tx_client(imu, imu, [distance1, distance2], HOST, PORT)
+        try:
+            distance1, distance2, imu = await sensors(tof1, tof2, manager)
+            print(distance1, distance2, imu)
+            await com.run_tx_client(imu, imu, [distance1, distance2], HOST, PORT)
+            await asyncio.sleep(0.1)
+        except Exception as e:
+            print(f"Error in main loop: {e}")
+            await asyncio.sleep(1)  # Wait a bit before retrying
+            continue
+
 
 if __name__ == '__main__':
     try:
