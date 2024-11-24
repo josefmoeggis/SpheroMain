@@ -46,6 +46,7 @@ async def sensors(tof1, tof2, manager):
     return distance1, distance2, imu_rot, imu_acc
 
 async def main():
+    cam = camsen.SimpleBroadcaster()
     await rvr.wake()
     await asyncio.sleep(2)
     mux, tof1, tof2 = await camsen.dist_sensor_init()
@@ -61,6 +62,7 @@ async def main():
     )
     await asyncio.sleep(0.1)
     await rvr.sensor_control.start(interval=250)
+    await cam.start()
 
     while True:
         try:
