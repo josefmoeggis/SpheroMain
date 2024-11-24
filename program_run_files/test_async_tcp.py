@@ -45,17 +45,6 @@ async def sensors(tof1, tof2, manager):
     imu_acc = [imu_acc_dict['X'], imu_acc_dict['Y'], imu_acc_dict['Z']]
     return distance1, distance2, imu_rot, imu_acc
 
-async def run_sensors(tof1, tof2, manager):
-    while True:
-        try:
-            distance1, distance2, imu, acc = await sensors(tof1, tof2, manager)
-            print(distance1, distance2, imu, acc)
-            await com.run_tx_client(imu, acc, [distance1, distance2], HOST, PORT)
-            await asyncio.sleep(0.1)
-        except Exception as e:
-            print(f"Error in main loop: {e}")
-            await asyncio.sleep(1)  # Wait a bit before retrying
-            continue
 
 async def main():
     cam = camsen.SimpleBroadcaster(broadcast_ip=HOST)
@@ -63,6 +52,7 @@ async def main():
     await asyncio.sleep(2)
     mux, tof1, tof2 = await camsen.dist_sensor_init()
     manager = camsen.IMUManager()
+    camera_task = asyncio.create_task(cam.start())
     await rvr.sensor_control.add_sensor_data_handler(
         service=RvrStreamingServices.imu,
         handler=manager.imu_handler
@@ -76,7 +66,20 @@ async def main():
     await rvr.sensor_control.start(interval=250)
     await cam.start()
 
-    await run_sensors(tof1, tof2, manager)
+    try:
+        while True:
+            try:
+                distance1, distance2, imu, acc = await sensors(tof1, tof2, manager)
+                print(distance1, distance2, imu, acc)
+                await com.run_tx_client(imu, acc, [distance1, distance2], HOST, PORT)
+                await asyncio.sleep(0.1)
+            except Exception as e:
+                print(f"Error in main loop: {e}")
+                await asyncio.sleep(1)
+                continue
+    finally:
+        camera_task.cancel()
+
 
 if __name__ == '__main__':
     try:
