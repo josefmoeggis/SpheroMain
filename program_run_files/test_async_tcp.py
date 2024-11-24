@@ -21,8 +21,6 @@ rvr = SpheroRvrAsync(
         loop
     )
 )
-async def imu_handler(imu_data):
-    return imu_data
 
 async def ToF_read(tof):
     try:
@@ -36,12 +34,13 @@ async def ToF_read(tof):
         print(e)
 
 async def sensors(tof1, tof2, manager):
-    distance1, distance2, imu = await asyncio.gather(
+    distance1, distance2, imu, acc = await asyncio.gather(
         ToF_read(tof1),
         ToF_read(tof2),
         asyncio.to_thread(manager.get_latest_imu_data),
+        asyncio.to_thread(manager.get_latest_acc_data)
     )
-    print(imu)
+    print(imu, acc)
     return distance1, distance2, imu['IMU']
 
 async def main():
@@ -53,11 +52,15 @@ async def main():
         service=RvrStreamingServices.imu,
         handler=manager.imu_handler
     )
+    await rvr.sensor_control.add_sensor_data_handler(
+        service=RvrStreamingServices.accelerometer,
+        handler=manager.acc_handler
+    )
     await rvr.sensor_control.start(interval=250)
 
     while True:
         try:
-            distance1, distance2, imu, acc = await sensors(tof1, tof2, manager)
+            distance1, distance2, imu = await sensors(tof1, tof2, manager)
             print(distance1, distance2, imu)
             await com.run_tx_client(imu, imu, [distance1, distance2], HOST, PORT)
             await asyncio.sleep(0.1)
