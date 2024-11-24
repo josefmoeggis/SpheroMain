@@ -41,7 +41,6 @@ async def sensors(tof1, tof2, manager):
         ToF_read(tof2),
         asyncio.to_thread(manager.get_latest_imu_data),
     )
-    print(acc)
     return distance1, distance2, imu['IMU']
 
 async def main():
@@ -54,10 +53,6 @@ async def main():
         handler=manager.imu_handler
     )
     await asyncio.sleep(0.1)
-    await rvr.sensor_control.add_sensor_data_handler(
-        service=RvrStreamingServices.accelerometer,
-        handler=manager.accelerometer_handler
-    )
 
     await asyncio.sleep(0.1)
     await rvr.sensor_control.start(interval=250)
