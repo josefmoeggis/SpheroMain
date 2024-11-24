@@ -97,13 +97,22 @@ async def ToF_read(tof):
     except Exception as e:
         print(e)
 
+
 class IMUManager:
     def __init__(self):
-        self.latest_imu_data = None
+        self.latest_imu_data = {'IMU': {'Pitch': 0.0, 'Roll': 0.0, 'Yaw': 0.0}}
+        self.latest_acc_data = {'Accelerometer': {'X': 0.0, 'Y': 0.0, 'Z': 0.0}}
 
     async def imu_handler(self, imu_data):
         self.latest_imu_data = imu_data
-        return imu_data
+        print('IMU data response: ', imu_data)
+
+    async def accelerometer_handler(self, acc_data):
+        self.latest_acc_data = acc_data
+        print('Accelerometer data response: ', acc_data)
 
     def get_latest_imu_data(self):
-        return self.latest_imu_data
+        return self.latest_imu_data if self.latest_imu_data else {'IMU': {'Pitch': 0.0, 'Roll': 0.0, 'Yaw': 0.0}}
+
+    def get_latest_acc_data(self):
+        return self.latest_acc_data if self.latest_acc_data else {'Accelerometer': {'X': 0.0, 'Y': 0.0, 'Z': 0.0}}
