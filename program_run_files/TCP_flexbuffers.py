@@ -5,32 +5,25 @@ import asyncio
 async def run_tx_client(acc_data, rot_data, dist_data, HOST, PORT):
     print('running tx')
     builder = flex.Builder()
-    # Pack
+
     with builder.Map():
         builder.Key('acc')
         builder.TypedVectorFromElements(acc_data, flex.Type.FLOAT)
-
         builder.Key('rot')
         builder.TypedVectorFromElements(rot_data, flex.Type.FLOAT)
-
         builder.Key('dist')
         builder.TypedVectorFromElements(dist_data, flex.Type.FLOAT)
 
     packed_dict = builder.Finish()
 
-
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        try:
-            s.connect((HOST, PORT))
-
-            # Send the packed data
-            s.sendall(packed_dict)
-
-            # Shutdown send to signal we're done sending
-            s.shutdown(socket.SHUT_WR)
-
-        except Exception as e:
-            print(f"Error unpacking response: {e}")
+    try:
+        reader, writer = await asyncio.open_connection(HOST, PORT)
+        writer.write(packed_dict)
+        await writer.drain()
+        writer.close()
+        await writer.wait_closed()
+    except Exception as e:
+        print(f"Error sending data: {e}")
 
 async def run_robot(response_dict, rvr):
     print('running robot')
