@@ -36,13 +36,14 @@ async def ToF_read(tof):
         print(e)
 
 async def sensors(tof1, tof2, manager):
-    distance1, distance2, imu = await asyncio.gather(
+    distance1, distance2, imu, acc = await asyncio.gather(
         ToF_read(tof1),
         ToF_read(tof2),
         asyncio.to_thread(manager.get_latest_imu_data),
+        asyncio.to_thread(manager.get_latest_acc_data),
     )
-    print(imu)
-    return distance1, distance2, imu['IMU'], imu['Accelerometer']
+    print(acc)
+    return distance1, distance2, imu['IMU'], acc['Accelerometer']
 
 async def main():
     await rvr.wake()
@@ -52,6 +53,10 @@ async def main():
     await rvr.sensor_control.add_sensor_data_handler(
         service=RvrStreamingServices.imu,
         handler=manager.imu_handler
+    )
+    await rvr.sensor_control.add_sensor_data_handler(
+        service=RvrStreamingServices.accelerometer,
+        handler=manager.acc_handler
     )
     await rvr.sensor_control.start(interval=250)
 
