@@ -33,14 +33,12 @@ async def ToF_read(tof):
         print(e)
 
 async def sensors(tof1, tof2, manager):
-    await rvr.sensor_control.start(interval=250)
-    while True:
-        distance1, distance2, imu = await asyncio.gather(
-            ToF_read(tof1),
-            ToF_read(tof2),
-            asyncio.to_thread(manager.get_latest_imu_data),
-        )
-        return distance1, distance2, imu
+    distance1, distance2, imu = await asyncio.gather(
+        ToF_read(tof1),
+        ToF_read(tof2),
+        asyncio.to_thread(manager.get_latest_imu_data),
+    )
+    return distance1, distance2, imu
 
 async def main():
     await rvr.wake()
@@ -51,9 +49,10 @@ async def main():
         service=RvrStreamingServices.imu,
         handler=manager.imu_handler
     )
-
-    distance1, distance2, imu = await sensors(tof1, tof2, manager)
-    print(distance1, distance2, imu)
+    await rvr.sensor_control.start(interval=250)
+    while True:
+        distance1, distance2, imu = await sensors(tof1, tof2, manager)
+        print(distance1, distance2, imu)
 
 if __name__ == '__main__':
     try:
