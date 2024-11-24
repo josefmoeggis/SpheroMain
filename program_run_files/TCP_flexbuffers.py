@@ -16,11 +16,17 @@ async def run_tx_client(rot_data, acc_data, dist_data, HOST, PORT):
 
         packed_dict = builder.Finish()
 
-        reader, writer = await asyncio.open_connection(HOST, PORT)
-        writer.write(packed_dict)
-        await writer.drain()
-        writer.close()
-        await writer.wait_closed()
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                s.connect((HOST, PORT))
+                print(packed_dict)
+                # Send the packed data
+                s.sendall(packed_dict)
+
+                s.shutdown(socket.SHUT_WR)
+                print('sending...')
+            except Exception as e:
+                print(f"Error unpacking response: {e}")
     except Exception as e:
         print(f"Error in tx_client: {e}")
 
