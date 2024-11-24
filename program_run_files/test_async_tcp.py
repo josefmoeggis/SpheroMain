@@ -44,35 +44,41 @@ async def sensors(tof1, tof2, manager):
 async def main():
     await rvr.wake()
     await asyncio.sleep(2)
+    print("RVR awake")
+
     mux, tof1, tof2 = await camsen.dist_sensor_init()
     manager = camsen.IMUManager()
-    await rvr.sensor_control.start(interval=250)
-    await rvr.sensor_control.add_sensor_data_handler(
-        service=RvrStreamingServices.imu,
-        handler=manager.imu_handler
-    )
-    print("IMU handler added successfully")
-    await asyncio.sleep(0.1)
-    print("Available services:", [attr for attr in dir(RvrStreamingServices) if not attr.startswith('_')])
+    print("Sensors initialized")
 
-    print("Adding accelerometer handler...")
-    await rvr.sensor_control.add_sensor_data_handler(
-        service=RvrStreamingServices.accelerometer,
-        handler=manager.accelerometer_handler
-    )
-    print("Accelerometer handler added successfully")
-    await asyncio.sleep(0.1)
+    # Clear any existing handlers first
+    await rvr.sensor_control.clear()
+    await asyncio.sleep(0.5)
 
-    while True:
-        try:
-            distance1, distance2, imu = await sensors(tof1, tof2, manager)
-            print(distance1, distance2, imu)
-            await com.run_tx_client(imu, imu, [distance1, distance2], HOST, PORT)
-            await asyncio.sleep(0.1)
-        except Exception as e:
-            print(f"Error in main loop: {e}")
-            await asyncio.sleep(1)  # Wait a bit before retrying
-            continue
+    try:
+        print("Adding IMU handler...")
+        await rvr.sensor_control.add_sensor_data_handler(
+            service=RvrStreamingServices.imu,
+            handler=manager.imu_handler
+        )
+        print("IMU handler added successfully")
+        await asyncio.sleep(0.5)
+
+        print("Adding accelerometer handler...")
+        await rvr.sensor_control.add_sensor_data_handler(
+            service=RvrStreamingServices.accelerometer,
+            handler=manager.accelerometer_handler,
+            interval=500  # Try adding interval here
+        )
+        print("Accelerometer handler added successfully")
+        await asyncio.sleep(0.5)
+
+    except Exception as e:
+        print(f"Error during handler setup: {e}")
+        return
+
+    print("Starting sensor control...")
+    await rvr.sensor_control.start(interval=500)
+    print("Sensor control started")
 
 
 if __name__ == '__main__':
