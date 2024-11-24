@@ -38,17 +38,14 @@ async def initialize():
 async def run_sensor_stream(tof1, tof2):
     print('sensor stream')
     while True:
-        distance1, distance2, rot, acc = await asyncio.gather(
+        distance1, distance2, imu = await asyncio.gather(
             cam_sens.ToF_read(tof1),
             cam_sens.ToF_read(tof2),
             rvr.sensor_control.add_sensor_data_handler(
                 service=RvrStreamingServices.imu,
                 handler=cam_sens.imu_handler),
-            rvr.sensor_control.add_sensor_data_handler(
-                service=RvrStreamingServices.accelerometer,
-                handler=cam_sens.accelerometer_handler)
         )
-        await com.run_tx_client(acc, rot, [distance1, distance2], HOST, PORT_TX)
+        await com.run_tx_client(imu, [distance1, distance2], HOST, PORT_TX)
 
 
 async def run_commands(rvr):
