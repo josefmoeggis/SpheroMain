@@ -52,7 +52,14 @@ async def main():
     )
     print("IMU handler added successfully")
     await asyncio.sleep(0.1)
+    print("Available services:", [attr for attr in dir(RvrStreamingServices) if not attr.startswith('_')])
 
+    print("Adding accelerometer handler...")
+    await rvr.sensor_control.add_sensor_data_handler(
+        service=RvrStreamingServices.accelerometer,
+        handler=manager.accelerometer_handler
+    )
+    print("Accelerometer handler added successfully")
     await asyncio.sleep(0.1)
     await rvr.sensor_control.start(interval=250)
 
