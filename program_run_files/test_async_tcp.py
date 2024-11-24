@@ -50,6 +50,7 @@ async def main():
         service=RvrStreamingServices.imu,
         handler=manager.imu_handler
     )
+    print("IMU handler added successfully")
     await asyncio.sleep(0.1)
 
     await asyncio.sleep(0.1)
