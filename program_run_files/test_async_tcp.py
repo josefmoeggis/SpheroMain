@@ -1,6 +1,7 @@
 import os
 import sys
 import camera_sensors as camsen
+import TCP_flexbuffers as com
 
 # USE THIS FILE AS BASE FOR MAIN IN FUTURE JOSEF
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
@@ -10,6 +11,8 @@ from sphero_sdk import SpheroRvrAsync
 from sphero_sdk import SerialAsyncDal
 from sphero_sdk import RvrStreamingServices
 
+HOST = "10.22.119.215"
+PORT = 5001
 
 loop = asyncio.get_event_loop()
 
@@ -50,9 +53,11 @@ async def main():
         handler=manager.imu_handler
     )
     await rvr.sensor_control.start(interval=250)
+
     while True:
         distance1, distance2, imu = await sensors(tof1, tof2, manager)
         print(distance1, distance2, imu)
+        await com.run_tx_client(imu, imu, [distance1, distance2], HOST, PORT)
 
 if __name__ == '__main__':
     try:
