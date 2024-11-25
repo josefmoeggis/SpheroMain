@@ -12,7 +12,7 @@ from sphero_sdk import SerialAsyncDal
 from sphero_sdk import RvrStreamingServices
 
 HOST = "10.22.119.215"
-PORT = 9090
+PORT = 5001
 
 loop = asyncio.get_event_loop()
 
