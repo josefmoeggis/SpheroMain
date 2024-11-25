@@ -53,6 +53,6 @@ if __name__ == "__main__":
             while True:
                 if not run_tx_client(s, rot_data, acc_data, dist_data):
                     break
-                time.sleep(0.01)
+                time.sleep(1)
         except Exception as e:
             print(f"Connection error: {e}")
