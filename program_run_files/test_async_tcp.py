@@ -83,6 +83,7 @@ async def main():
     try:
         print('i got here')
         sensor_task = asyncio.create_task(sensors_tx(tof1, tof2, manager))
+        await sensor_task
         print('i got here 2')
     except Exception as e:
         print(f"Error in main loop: {e}")
