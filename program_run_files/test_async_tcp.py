@@ -81,7 +81,9 @@ async def main():
     # await cam.start()
 
     try:
+        print('i got here')
         sensor_task = asyncio.create_task(sensors_tx(tof1, tof2, manager))
+        print('i got here 2')
     except Exception as e:
         print(f"Error in main loop: {e}")
         await asyncio.sleep(1)
