@@ -13,7 +13,7 @@ from sphero_sdk import SerialAsyncDal
 from sphero_sdk import RvrStreamingServices
 
 HOST = "10.22.119.215"
-PORT = 5001
+PORT = 9090
 
 loop = asyncio.get_event_loop()
 
@@ -40,6 +40,7 @@ async def sensors_tx(tof1, tof2, manager):
             s.connect((HOST, PORT))
             print('connected')
             while True:
+
                 distance1, distance2, imu = await asyncio.gather(
                     ToF_read(tof1),
                     ToF_read(tof2),
