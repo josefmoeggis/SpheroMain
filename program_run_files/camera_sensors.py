@@ -47,8 +47,10 @@ class SimpleBroadcaster:
 
                 await asyncio.sleep(1/15)
 
-        except KeyboardInterrupt:
-            print("Stopping broadcast...")
+        except asyncio.CancelledError:
+           print("Camera broadcast cancelled")
+        except Exception as e:
+            print(f"Camera broadcast error: {e}")
         finally:
             self.camera.stop()
             self.sock.close()

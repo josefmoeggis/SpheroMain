@@ -64,7 +64,7 @@ async def main():
     )
     await asyncio.sleep(0.1)
     await rvr.sensor_control.start(interval=250)
-    await cam.start()
+    # await cam.start()
 
     try:
         while True:
