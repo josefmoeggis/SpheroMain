@@ -52,6 +52,7 @@ async def sensors_tx(tof1, tof2, manager):
                 print(imu_rot)
                 await com.run_tx_client(imu_rot, imu_acc, [distance1, distance2], s)
                 await asyncio.sleep(0.2)
+
         except Exception as e:
             print(f"Error in tx_client: {e}")
 

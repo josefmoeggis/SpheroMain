@@ -19,6 +19,7 @@ async def run_tx_client(rot_data, acc_data, dist_data, s):
             print(packed_dict)
             # Send the packed data
             s.sendall(packed_dict)
+            return True
     except Exception as e:
         print(f"Error in tx_client: {e}")
 
