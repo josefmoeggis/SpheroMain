@@ -106,11 +106,9 @@ class IMUManager:
         self.latest_acc_data = {'Accelerometer': {'X': 0.0, 'Y': 0.0, 'Z': 0.0}}
 
     async def imu_handler(self, imu_data):
-        print('handler_imu')
         self.latest_imu_data = imu_data
 
     async def accelerometer_handler(self, acc_data):
-        print('handler_imu')
         self.latest_acc_data = acc_data
 
     def get_latest_imu_data(self):
