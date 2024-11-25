@@ -77,8 +77,8 @@ async def main():
                 print(f"Error in main loop: {e}")
                 await asyncio.sleep(1)
                 continue
-    finally:
-        camera_task.cancel()
+    except Exception as e:
+        print(e)
 
 
 if __name__ == '__main__':
