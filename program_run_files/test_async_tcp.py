@@ -47,12 +47,12 @@ async def sensors(tof1, tof2, manager):
 
 
 async def main():
-    cam = camsen.SimpleBroadcaster(broadcast_ip=HOST)
+    #cam = camsen.SimpleBroadcaster(broadcast_ip=HOST)
     await rvr.wake()
     await asyncio.sleep(2)
     mux, tof1, tof2 = await camsen.dist_sensor_init()
     manager = camsen.IMUManager()
-    camera_task = asyncio.create_task(cam.start())
+    #camera_task = asyncio.create_task(cam.start())
     await rvr.sensor_control.add_sensor_data_handler(
         service=RvrStreamingServices.imu,
         handler=manager.imu_handler
