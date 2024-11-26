@@ -4,6 +4,8 @@ import camera_sensors as camsen
 import TCP_flexbuffers as com
 import socket
 
+from program_run_files.run_robot import PORT_RX
+
 # USE THIS FILE AS BASE FOR MAIN IN FUTURE JOSEF
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
 
@@ -13,7 +15,8 @@ from sphero_sdk import SerialAsyncDal
 from sphero_sdk import RvrStreamingServices
 
 HOST = "10.22.119.215"
-PORT = 9090
+PORT_TX = 9090
+#PORT_RX = 9091
 
 loop = asyncio.get_event_loop()
 
@@ -34,29 +37,35 @@ async def ToF_read(tof):
     except Exception as e:
         print(e)
 
-async def sensors(tof1, tof2, manager, connection):
-    while True:
+async def sensors(tof1, tof2, manager, HOST, PORT):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
-            distance1, distance2, imu = await asyncio.gather(
-                ToF_read(tof1),
-                ToF_read(tof2),
-                asyncio.to_thread(manager.get_latest_imu_data),
-            )
-            await asyncio.sleep(0.1)
-            imu_rot_dict = imu['IMU']
-            imu_rot = [imu_rot_dict['Roll'], imu_rot_dict['Pitch'], imu_rot_dict['Yaw']]
-            imu_acc_dict = imu['Accelerometer']
-            imu_acc = [imu_acc_dict['X'], imu_acc_dict['Y'], imu_acc_dict['Z']]
-            distance = [distance1, distance2]
-            print(distance, imu_rot, imu_acc)
-            data_dict =  await com.pack_data(imu_rot, imu_acc, distance)
-            connection.sendall(data_dict)
-            await asyncio.sleep(0.1)
+            s.connect((HOST, PORT))
+            while True:
+                try:
+                    distance1, distance2, imu = await asyncio.gather(
+                        ToF_read(tof1),
+                        ToF_read(tof2),
+                        asyncio.to_thread(manager.get_latest_imu_data),
+                    )
+                    await asyncio.sleep(0.1)
+                    imu_rot_dict = imu['IMU']
+                    imu_rot = [imu_rot_dict['Roll'], imu_rot_dict['Pitch'], imu_rot_dict['Yaw']]
+                    imu_acc_dict = imu['Accelerometer']
+                    imu_acc = [imu_acc_dict['X'], imu_acc_dict['Y'], imu_acc_dict['Z']]
+                    distance = [distance1, distance2]
+                    print(distance, imu_rot, imu_acc)
+                    data_dict =  await com.pack_data(imu_rot, imu_acc, distance)
+                    s.sendall(data_dict)
+                    await asyncio.sleep(0.1)
+                except Exception as e:
+                    print("Couldn't send or get sensorvals")
+                    print(e)
+                    await asyncio.sleep(0.5)
+                    continue
         except Exception as e:
-            print("Couldn't send or get sensorvals")
-            print(e)
-            await asyncio.sleep(0.5)
-            continue
+            s.shutdown(socket.SHUT_WR)
+            print(f"Error unpacking response: {e}")
 
 
 
@@ -78,27 +87,21 @@ async def main():
     await asyncio.sleep(0.1)
     await rvr.sensor_control.start(interval=250)
 
+    tasks = [
+        asyncio.create_task(sensors(tof1, tof2, manager, HOST, PORT_TX)),
+        #asyncio.create_task(com.run_rx_client(HOST, PORT_RX)),
+        asyncio.create_task(cam.start())
+    ]
+    try:
+        await asyncio.gather(*tasks)
+    except KeyboardInterrupt:
+        for task in tasks:
+            task.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
+        print("Tasks cancelled")
+    await asyncio.sleep(0.1)
 
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        try:
-            s.connect((HOST, PORT))
-            tasks = [
-                asyncio.create_task(sensors(tof1, tof2, manager, s)),
-                asyncio.create_task(cam.start())
-            ]
-            try:
-                await asyncio.gather(*tasks)
-            except KeyboardInterrupt:
-                for task in tasks:
-                    task.cancel()
-                await asyncio.gather(*tasks, return_exceptions=True)
-                print("Tasks cancelled")
-            await asyncio.sleep(0.1)
 
-        except Exception as e:
-            asyncio.ga
-            s.shutdown(socket.SHUT_WR)
-            print(f"Error unpacking response: {e}")
 
 
 if __name__ == '__main__':
