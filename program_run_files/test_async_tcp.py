@@ -55,6 +55,7 @@ async def sensors(tof1, tof2, manager, host, port):
                     distance = [distance1, distance2]
                     print(distance, imu_rot, imu_acc)
                     data_dict =  await com.pack_data(imu_rot, imu_acc, distance)
+                    print('data is packed')
                     s.sendall(data_dict)
                     print('we got here')
                     await asyncio.sleep(0.1)
