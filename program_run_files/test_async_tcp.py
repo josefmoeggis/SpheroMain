@@ -36,10 +36,10 @@ async def ToF_read(tof):
     except Exception as e:
         print(e)
 
-async def sensors(tof1, tof2, manager, HOST, PORT):
+async def sensors(tof1, tof2, manager, host, port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
-            s.connect((HOST, PORT))
+            s.connect((host, port))
             while True:
                 try:
                     distance1, distance2, imu = await asyncio.gather(

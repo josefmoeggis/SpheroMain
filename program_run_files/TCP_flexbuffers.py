@@ -55,11 +55,11 @@ async def run_robot(response_dict, rvr):
 
 
 
-async def run_rx_client(rvr, HOST, PORT):
+async def run_rx_client(rvr, host, port):
     print('running rx')
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((HOST, PORT))
+            s.connect((host, port))
             await asyncio.sleep(.1)
             while True:
 
@@ -85,7 +85,7 @@ async def run_rx_client(rvr, HOST, PORT):
                     except Exception as e:
                         print(f"Error receiving data: {e}")
                         break
-
+                await asyncio.sleep(0.1)
     except Exception as e:
         print(f"Connection error: {e}")
         await asyncio.sleep(1)  # Wait before retrying connection
