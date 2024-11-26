@@ -61,7 +61,7 @@ async def sensors(tof1, tof2, manager, connection):
 
 
 async def main():
-    #cam = camsen.SimpleBroadcaster(broadcast_ip=HOST)
+    cam = camsen.SimpleBroadcaster(broadcast_ip=HOST)
     await rvr.wake()
     await asyncio.sleep(2)
     mux, tof1, tof2 = await camsen.dist_sensor_init()
@@ -78,7 +78,7 @@ async def main():
     )
     await asyncio.sleep(0.1)
     await rvr.sensor_control.start(interval=250)
-    # await cam.start()
+    await cam.start()
 
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
