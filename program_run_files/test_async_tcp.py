@@ -56,6 +56,7 @@ async def sensors(tof1, tof2, manager, host, port):
                     print(distance, imu_rot, imu_acc)
                     data_dict =  await com.pack_data(imu_rot, imu_acc, distance)
                     s.sendall(data_dict)
+                    print('we got here')
                     await asyncio.sleep(0.1)
                 except Exception as e:
                     print("Couldn't send or get sensorvals")
