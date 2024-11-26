@@ -12,8 +12,8 @@ from sphero_sdk import SpheroRvrAsync
 from sphero_sdk import SerialAsyncDal
 from sphero_sdk import RvrStreamingServices
 
-#HOST = "10.22.119.215"
-HOST = "10.22.20.251"
+HOST = "10.22.119.215"
+#HOST = "10.22.20.251"
 PORT_TX = 9090
 PORT_RX = 9091
 
