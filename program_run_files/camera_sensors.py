@@ -46,7 +46,7 @@ class SimpleBroadcaster:
                     chunk = jpeg_data[i:i + chunk_size]
                     self.sock.sendto(chunk, self.address)
 
-                await asyncio.sleep(1/2)
+                await asyncio.sleep(1/10)
 
         except asyncio.CancelledError:
            print("Camera broadcast cancelled")
