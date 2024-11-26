@@ -81,7 +81,7 @@ async def run_rx_client(rvr, host, port):
 
                             buffer = b''
                             await run_robot(response_dict, rvr)
-                            await asyncio.sleep(0.05)
+                            await asyncio.sleep(0.02)
                     except socket.timeout:
                         # No data received, continue listening
                         continue
