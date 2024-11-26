@@ -89,7 +89,6 @@ async def main():
 
     tasks = [
         asyncio.create_task(sensors(tof1, tof2, manager, HOST, PORT_TX)),
-        #asyncio.create_task(com.run_rx_client(HOST, PORT_RX)),
         asyncio.create_task(cam.start())
     ]
     try:
