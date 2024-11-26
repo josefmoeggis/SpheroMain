@@ -2,7 +2,7 @@ from flatbuffers import flexbuffers as flex
 import socket
 import asyncio
 
-async def run_tx_client(rot_data, acc_data, dist_data, HOST, PORT):
+async def pack_data(rot_data, acc_data, dist_data):
     print('running tx')
     builder = flex.Builder()
     try:
@@ -14,21 +14,12 @@ async def run_tx_client(rot_data, acc_data, dist_data, HOST, PORT):
             builder.Key('dist')
             builder.TypedVectorFromElements(dist_data, flex.Type.FLOAT)
 
-        packed_dict = builder.Finish()
-
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            try:
-                s.connect((HOST, PORT))
-                print(packed_dict)
-                # Send the packed data
-                s.sendall(packed_dict)
-
-                s.shutdown(socket.SHUT_WR)
-                print('sending...')
-            except Exception as e:
-                print(f"Error unpacking response: {e}")
+        return builder.Finish()
     except Exception as e:
-        print(f"Error in tx_client: {e}")
+        print('Error in packing data')
+        print(e)
+
+
 
 async def run_robot(response_dict, rvr):
     print('running robot')
