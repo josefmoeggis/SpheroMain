@@ -47,7 +47,7 @@ async def sensors(tof1, tof2, manager, host, port):
                         ToF_read(tof2),
                         asyncio.to_thread(manager.get_latest_imu_data),
                     )
-                    await asyncio.sleep(0.1)
+                    await asyncio.sleep(0.01)
                     imu_rot_dict = imu['IMU']
                     imu_rot = [imu_rot_dict['Roll'], imu_rot_dict['Pitch'], imu_rot_dict['Yaw']]
                     imu_acc_dict = imu['Accelerometer']
@@ -58,11 +58,11 @@ async def sensors(tof1, tof2, manager, host, port):
                     print('data is packed')
                     s.sendall(data_dict)
                     print('we got here')
-                    await asyncio.sleep(0.1)
+                    await asyncio.sleep(0.01)
                 except Exception as e:
                     print("Couldn't send or get sensorvals")
                     print(e)
-                    await asyncio.sleep(0.5)
+                    await asyncio.sleep(0.2)
                     continue
         except Exception as e:
             s.shutdown(socket.SHUT_WR)
