@@ -36,10 +36,10 @@ async def run_robot(response_dict, rvr):
         flags = response_dict['flags']
 
         if heading_mode:
-            rvr.drive_with_heading(speed, heading, flags)
+            await rvr.drive_with_heading(speed, heading, flags)
             print('true')
         else:
-            rvr.raw_motors(
+            await rvr.raw_motors(
                 left_mode=left_mode,
                 left_duty_cycle=left_speed,
                 right_mode=right_mode,
