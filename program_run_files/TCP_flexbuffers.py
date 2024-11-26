@@ -60,6 +60,7 @@ async def run_rx_client(rvr, host, port):
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((host, port))
+            s.setblocking(False)
             print('connected to socket')
             await asyncio.sleep(.1)
             while True:
