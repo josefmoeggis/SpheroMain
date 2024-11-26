@@ -72,7 +72,6 @@ async def run_rx_client(rvr, host, port):
                         if not chunk:
                             break
                         buffer += chunk
-                        await asyncio.sleep(0.01)
 
                         # Process complete messages
                         if len(buffer) >= 4:  # Min størrelse msg
