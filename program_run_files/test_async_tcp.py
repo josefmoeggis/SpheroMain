@@ -78,7 +78,6 @@ async def main():
     )
     await asyncio.sleep(0.1)
     await rvr.sensor_control.start(interval=250)
-    await cam.start()
 
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -86,6 +85,7 @@ async def main():
             s.connect((HOST, PORT))
             await sensors(tof1, tof2, manager, s)
             await asyncio.sleep(0.1)
+            await cam.start()
 
         except Exception as e:
             s.shutdown(socket.SHUT_WR)
