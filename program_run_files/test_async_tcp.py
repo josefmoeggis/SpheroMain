@@ -14,7 +14,7 @@ from sphero_sdk import RvrStreamingServices
 
 HOST = "10.22.119.215"
 PORT_TX = 9090
-#PORT_RX = 9091
+PORT_RX = 9091
 
 loop = asyncio.get_event_loop()
 
