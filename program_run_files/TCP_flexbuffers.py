@@ -55,37 +55,36 @@ async def run_robot(response_dict, rvr):
 
 
 
-async def run_rx_client(HOST, PORT):
+async def run_rx_client(rvr, HOST, PORT):
     print('running rx')
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((HOST, PORT))
-
-            # Set a timeout to avoid hanging
             await asyncio.sleep(.1)
-
-            buffer = b''
             while True:
-                try:
-                    chunk = s.recv(1024)
-                    if not chunk:
+
+                buffer = b''
+                while True:
+                    try:
+                        chunk = s.recv(1024)
+                        if not chunk:
+                            break
+                        buffer += chunk
+
+                        # Process complete messages
+                        if len(buffer) >= 4:  # Min størrlse msg
+                            root = flex.GetRoot(buffer)
+                            response_dict = root.Value
+
+                            buffer = b''
+                            await run_robot(response_dict, rvr)
+                            await asyncio.sleep(0.1)
+                    except socket.timeout:
+                        # No data received, continue listening
+                        continue
+                    except Exception as e:
+                        print(f"Error receiving data: {e}")
                         break
-                    buffer += chunk
-
-                    # Process complete messages
-                    if len(buffer) >= 4:  # Min størrlse msg
-                        root = flex.GetRoot(buffer)
-                        response_dict = root.Value
-
-                        buffer = b''
-                        return response_dict
-
-                except socket.timeout:
-                    # No data received, continue listening
-                    continue
-                except Exception as e:
-                    print(f"Error receiving data: {e}")
-                    break
 
     except Exception as e:
         print(f"Connection error: {e}")

@@ -4,6 +4,8 @@ import camera_sensors as camsen
 import TCP_flexbuffers as com
 import socket
 
+from program_run_files.run_robot import PORT_RX
+
 # USE THIS FILE AS BASE FOR MAIN IN FUTURE JOSEF
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
 
@@ -87,6 +89,7 @@ async def main():
 
     tasks = [
         asyncio.create_task(sensors(tof1, tof2, manager, HOST, PORT_TX)),
+        asyncio.create_task(com.run_rx_client(rvr, HOST, PORT_RX)),
         asyncio.create_task(cam.start())
     ]
     try:
