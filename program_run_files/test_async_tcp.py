@@ -49,7 +49,7 @@ async def sensors(tof1, tof2, manager, connection):
             imu_acc = [imu_acc_dict['X'], imu_acc_dict['Y'], imu_acc_dict['Z']]
             distance = [distance1, distance2]
             print(distance, imu_rot, imu_acc)
-            data_dict = com.pack_data(imu_rot, imu_acc, distance)
+            data_dict =  await com.pack_data(imu_rot, imu_acc, distance)
             connection.sendall(data_dict)
             await asyncio.sleep(0.1)
         except Exception as e:
