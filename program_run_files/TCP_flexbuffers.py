@@ -60,6 +60,7 @@ async def run_rx_client(rvr, host, port):
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((host, port))
+            print('connected to socket')
             await asyncio.sleep(.1)
             while True:
 
@@ -70,10 +71,12 @@ async def run_rx_client(rvr, host, port):
                         if not chunk:
                             break
                         buffer += chunk
+                        await asyncio.sleep(0.01)
 
                         # Process complete messages
-                        if len(buffer) >= 4:  # Min størrlse msg
+                        if len(buffer) >= 4:  # Min størrelse msg
                             root = flex.GetRoot(buffer)
+                            print('buffer received')
                             response_dict = root.Value
 
                             buffer = b''
