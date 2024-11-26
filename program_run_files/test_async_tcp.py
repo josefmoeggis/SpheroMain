@@ -4,8 +4,6 @@ import camera_sensors as camsen
 import TCP_flexbuffers as com
 import socket
 
-from program_run_files.run_robot import PORT_RX
-
 # USE THIS FILE AS BASE FOR MAIN IN FUTURE JOSEF
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
 
