@@ -66,7 +66,6 @@ async def main():
     await asyncio.sleep(2)
     mux, tof1, tof2 = await camsen.dist_sensor_init()
     manager = camsen.IMUManager()
-    #camera_task = asyncio.create_task(cam.start())
     await rvr.sensor_control.add_sensor_data_handler(
         service=RvrStreamingServices.imu,
         handler=manager.imu_handler
@@ -83,11 +82,21 @@ async def main():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
             s.connect((HOST, PORT))
-            await sensors(tof1, tof2, manager, s)
+            tasks = [
+                asyncio.create_task(sensors(tof1, tof2, manager, s)),
+                asyncio.create_task(cam.start())
+            ]
+            try:
+                await asyncio.gather(*tasks)
+            except KeyboardInterrupt:
+                for task in tasks:
+                    task.cancel()
+                await asyncio.gather(*tasks, return_exceptions=True)
+                print("Tasks cancelled")
             await asyncio.sleep(0.1)
-            await cam.start()
 
         except Exception as e:
+            asyncio.ga
             s.shutdown(socket.SHUT_WR)
             print(f"Error unpacking response: {e}")
 
