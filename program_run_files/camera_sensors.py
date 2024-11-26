@@ -28,6 +28,7 @@ class SimpleBroadcaster:
         try:
             while True:
                 # Capture frame
+                print('Camera is actually running')
                 frame = self.camera.capture_array()
 
                 # Convert to PIL Image and ensure RGB mode
@@ -45,7 +46,7 @@ class SimpleBroadcaster:
                     chunk = jpeg_data[i:i + chunk_size]
                     self.sock.sendto(chunk, self.address)
 
-                await asyncio.sleep(1/15)
+                await asyncio.sleep(1/2)
 
         except asyncio.CancelledError:
            print("Camera broadcast cancelled")
