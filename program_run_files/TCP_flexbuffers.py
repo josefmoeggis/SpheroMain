@@ -46,7 +46,16 @@ async def run_robot(response_dict, rvr):
     except Exception as e:
         print(f"Error processing command: {e}")
 
-
+async def receive_with_timeout(socket, timeout=1.0):
+    try:
+        # Convert the blocking socket receive to an async operation
+        chunk = await asyncio.wait_for(
+            asyncio.get_event_loop().sock_recv(socket, 1024),
+            timeout=timeout
+        )
+        return chunk
+    except asyncio.TimeoutError:
+        return None
 
 async def run_rx_client(rvr, host, port):
     try:
@@ -59,9 +68,12 @@ async def run_rx_client(rvr, host, port):
                 buffer = b''
                 while True:
                     try:
-                        chunk = s.recv(1024)
+                        chunk = await receive_with_timeout(s)
+                        if chunk is None:
+                            continue
                         if not chunk:
                             break
+
                         buffer += chunk
 
                         if len(buffer) >= 4:  # Min størrelse msg
