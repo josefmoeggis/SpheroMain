@@ -28,7 +28,6 @@ class SimpleBroadcaster:
         try:
             while True:
                 # Capture frame
-                print('Camera is actually running')
                 frame = self.camera.capture_array()
 
                 # Convert to PIL Image and ensure RGB mode

@@ -3,7 +3,6 @@ import socket
 import asyncio
 
 async def pack_data(rot_data, acc_data, dist_data):
-    print('running tx')
     builder = flex.Builder()
     try:
         with builder.Map():
@@ -22,7 +21,6 @@ async def pack_data(rot_data, acc_data, dist_data):
 
 
 async def run_robot(response_dict, rvr):
-    print('running robot')
     try:
         left_mode = response_dict['leftMode']
         left_speed = response_dict['leftSpeed']
@@ -37,7 +35,6 @@ async def run_robot(response_dict, rvr):
 
         if heading_mode:
             await rvr.drive_with_heading(speed, heading, flags)
-            print('true')
         else:
             await rvr.raw_motors(
                 left_mode=left_mode,
@@ -46,22 +43,16 @@ async def run_robot(response_dict, rvr):
                 right_duty_cycle=right_speed
             )
 
-        print(f'Right: {right_speed}, Left: {left_speed}, servo1: {servo1}, servo2: {servo2}, '
-              f'left_mode: {left_mode}, right_mode: {right_mode}, headingMode: {heading_mode}, '
-              f'speed: {speed}, heading: {heading}')
-
     except Exception as e:
         print(f"Error processing command: {e}")
 
 
 
 async def run_rx_client(rvr, host, port):
-    print('running rx')
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((host, port))
             s.setblocking(False)
-            print('connected to socket')
             await asyncio.sleep(.1)
             while True:
 
@@ -73,17 +64,14 @@ async def run_rx_client(rvr, host, port):
                             break
                         buffer += chunk
 
-                        # Process complete messages
                         if len(buffer) >= 4:  # Min størrelse msg
                             root = flex.GetRoot(buffer)
-                            print('buffer received')
                             response_dict = root.Value
 
                             buffer = b''
                             await run_robot(response_dict, rvr)
                             await asyncio.sleep(0.02)
                     except socket.timeout:
-                        # No data received, continue listening
                         continue
                     except Exception as e:
                         print(f"Error receiving data: {e}")
