@@ -1,6 +1,7 @@
 from flatbuffers import flexbuffers as flex
 import socket
 import asyncio
+import time
 
 async def pack_data(rot_data, acc_data, dist_data):
     builder = flex.Builder()
@@ -68,7 +69,7 @@ async def run_rx_client(rvr, host, port):
                 buffer = b''
                 while True:
                     try:
-                        chunk = await receive_with_timeout(s)
+                        chunk = await receive_with_timeout(s, .1)
                         if chunk is None:
                             continue
                         if not chunk:
@@ -82,6 +83,7 @@ async def run_rx_client(rvr, host, port):
 
                             buffer = b''
                             await run_robot(response_dict, rvr)
+                            print('Drive command: ' + time.time()*1000)
                             await asyncio.sleep(0.02)
                     except socket.timeout:
                         continue
