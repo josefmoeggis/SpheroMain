@@ -76,7 +76,7 @@ async def run_rx_client(rvr, host, port):
                     except Exception as e:
                         print(f"Error receiving data: {e}")
                         break
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(0.03)
     except Exception as e:
         print(f"Connection error: {e}")
         await asyncio.sleep(1)  # Wait before retrying connection
