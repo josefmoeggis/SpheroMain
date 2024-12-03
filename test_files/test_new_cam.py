@@ -8,10 +8,19 @@ picam2 = Picamera2()
 picam2.configure(picam2.create_video_configuration(main={"size": (640, 480),
                                                          "format": "YUV420"}))
 
-# Simpler UDP output format
-output = FfmpegOutput("-f h264 udp://10.22.119.83:9000")  # Replace with your PC's IP
+# Configure H264 encoder with specific parameters
+encoder = H264Encoder(bitrate=1000000, repeat=True, iperiod=15)
 
-picam2.start_recording(H264Encoder(), output=output)
+# More robust FFmpeg output command
+output = FfmpegOutput(
+    "-f h264 "
+    "-vcodec copy "  # Copy the encoded stream without re-encoding
+    "-tune zerolatency "  # Minimize latency
+    "-preset ultrafast "
+    "udp://10.22.46.50:9000"  # Your PC's IP
+)
+
+picam2.start_recording(encoder, output=output)
 
 try:
     while True:
