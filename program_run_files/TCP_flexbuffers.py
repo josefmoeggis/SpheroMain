@@ -17,6 +17,7 @@ async def pack_data(rot_data, acc_data, dist_data):
             builder.Key('dist')
             builder.TypedVectorFromElements(dist_data, flex.Type.FLOAT)
 
+
         return builder.Finish()
     except Exception as e:
         print('Error in packing data')
@@ -37,14 +38,16 @@ async def run_robot(response_dict, rvr):
         heading = response_dict['heading']
         flags = response_dict['flags']
 
+        print('LeftMode: '+ left_mode + ' RightMode: '+ right_mode + ' leftSpeed: ' + left_speed + 'rightSpeed: ' + right_speed)
+
         if heading_mode:
             await rvr.drive_with_heading(speed, heading, flags)
         else:
             await rvr.raw_motors(
-                left_mode=np.uint8(left_mode),
-                left_duty_cycle=np.uint8(left_speed),
-                right_mode=np.uint8(right_mode),
-                right_duty_cycle=np.uint8(right_speed)
+                left_mode=left_mode,
+                left_duty_cycle=left_speed,
+                right_mode=right_mode,
+                right_duty_cycle=right_speed
             )
 
     except Exception as e:
