@@ -8,13 +8,13 @@ picam2 = Picamera2()
 picam2.configure(picam2.create_video_configuration(main={"size": (640, 480),
                                                          "format": "YUV420"}))
 
-# Use specific FFmpeg options to match the receiver
-output = FfmpegOutput("-f rtp -sdp_file video.sdp rtp://127.0.0.1:9000")
+# Use the Windows PC's IP address instead of localhost
+output = FfmpegOutput("-f rtp -sdp_file video.sdp rtp://10.22.119.83:9000")  # Replace with your Windows PC's IP
 
 picam2.start_recording(H264Encoder(), output=output)
 
 try:
     while True:
-        sleep(1)  # Keep the script running
+        sleep(1)
 except KeyboardInterrupt:
     picam2.stop_recording()
