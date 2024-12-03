@@ -89,7 +89,6 @@ async def run_rx_client(rvr, host, port):
 
                             buffer = b''
                             await run_robot(response_dict, rvr)
-                            print('Drive command: ' + time.time()*1000)
                             await asyncio.sleep(0.02)
                     except socket.timeout:
                         continue
