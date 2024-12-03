@@ -1,7 +1,10 @@
+from pickletools import uint8
+
 from flatbuffers import flexbuffers as flex
 import socket
 import asyncio
 import time
+import numpy as np
 
 async def pack_data(rot_data, acc_data, dist_data):
     builder = flex.Builder()
@@ -38,10 +41,10 @@ async def run_robot(response_dict, rvr):
             await rvr.drive_with_heading(speed, heading, flags)
         else:
             await rvr.raw_motors(
-                left_mode=left_mode,
-                left_duty_cycle=left_speed,
-                right_mode=right_mode,
-                right_duty_cycle=right_speed
+                left_mode=np.uint8(left_mode),
+                left_duty_cycle=np.uint8(left_speed),
+                right_mode=np.uint8(right_mode),
+                right_duty_cycle=np.uint8(right_speed)
             )
 
     except Exception as e:
