@@ -10,7 +10,7 @@ picam2.configure(picam2.create_video_configuration(main={"size": (640, 480)}))
 # Configure MJPEG output
 encoder = MJPEGEncoder(bitrate=10000000)
 output = FfmpegOutput(
-    f"-f mpjpeg -r 30 udp://10.22.46.50:9000"  # Replace with your PC's IP
+    f"-f mpjpeg -r 30 udp://10.22.119.83:9000"  # Replace with your PC's IP
 )
 
 picam2.start_recording(encoder, output=output)
