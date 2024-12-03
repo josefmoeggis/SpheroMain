@@ -9,3 +9,8 @@ picam2 = Picamera2()
 picam2.configure(picam2.create_video_configuration(main={"size": (640, 480),
                                                          "format": "YUV420"}))
 picam2.start_recording(H264Encoder(), output=FfmpegOutput("-f rtp udp://127.0.0.1:9000"))
+try:
+    while True:
+        sleep(1)
+except KeyboardInterrupt:
+    picam2.stop_recording()
