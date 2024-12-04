@@ -9,7 +9,7 @@ picam2.configure(picam2.create_video_configuration(main={"size": (640, 480),
                                                          "format": "YUV420"}))
 
 # Simpler UDP output format
-output = FfmpegOutput("-f h264 udp://10.22.46.50:9000")  # Replace with your PC's IP
+output = FfmpegOutput("-f h264 udp://10.22.22.32:9000")  # Replace with your PC's IP
 
 picam2.start_recording(H264Encoder(), output=output)
 
