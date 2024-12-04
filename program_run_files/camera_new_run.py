@@ -3,6 +3,10 @@ import sys
 import camera_sensors as camsen
 import TCP_flexbuffers as com
 import socket
+from picamera2 import Picamera2
+from picamera2.encoders import H264Encoder
+from picamera2.outputs import FfmpegOutput
+
 
 # USE THIS FILE AS BASE FOR MAIN IN FUTURE JOSEF
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
@@ -12,10 +16,11 @@ from sphero_sdk import SpheroRvrAsync
 from sphero_sdk import SerialAsyncDal
 from sphero_sdk import RvrStreamingServices
 
-HOST = "10.22.119.83"
-#HOST = "10.22.20.251"
+#HOST = "10.22.119.215"
+HOST = "10.22.20.251"
 PORT_TX = 9090
 PORT_RX = 9091
+CAM_PORT = 9000
 
 loop = asyncio.get_event_loop()
 
@@ -24,6 +29,16 @@ rvr = SpheroRvrAsync(
         loop
     )
 )
+
+
+async def start_cam(host, port):
+    picam2 = Picamera2()
+    picam2.configure(picam2.create_video_configuration(main={"size": (640, 480),
+                                                             "format": "YUV420"}))
+
+    output = FfmpegOutput(f'-f h264 udp://{host}:{port}')  # Replace with your PC's IP
+
+    picam2.start_recording(H264Encoder(), output=output)
 
 async def ToF_read(tof):
     try:
@@ -67,7 +82,6 @@ async def sensors(tof1, tof2, manager, host, port):
 
 
 async def main():
-    cam = camsen.SimpleBroadcaster(broadcast_ip=HOST)
     await rvr.wake()
     await asyncio.sleep(2)
     mux, tof1, tof2 = await camsen.dist_sensor_init()
@@ -84,10 +98,11 @@ async def main():
     await asyncio.sleep(0.1)
     await rvr.sensor_control.start(interval=250)
 
+    await start_cam(HOST, CAM_PORT)
+
     tasks = [
         asyncio.create_task(sensors(tof1, tof2, manager, HOST, PORT_TX)),
         asyncio.create_task(com.run_rx_client(rvr, HOST, PORT_RX)),
-        asyncio.create_task(cam.start())
     ]
     try:
         await asyncio.gather(*tasks)
