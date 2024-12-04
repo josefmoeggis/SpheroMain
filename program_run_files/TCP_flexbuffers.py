@@ -65,37 +65,38 @@ async def receive_with_timeout(socket, timeout=1.0):
         return None
 
 async def run_rx_client(rvr, host, port):
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((host, port))
-            s.setblocking(False)
-            await asyncio.sleep(.1)
-            while True:
-
-                buffer = b''
+    while True:
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.connect((host, port))
+                s.setblocking(False)
+                await asyncio.sleep(.1)
                 while True:
-                    try:
-                        chunk = await receive_with_timeout(s, .1)
-                        if chunk is None:
+
+                    buffer = b''
+                    while True:
+                        try:
+                            chunk = await receive_with_timeout(s, .1)
+                            if chunk is None:
+                                continue
+                            if not chunk:
+                                break
+
+                            buffer += chunk
+
+                            if len(buffer) >= 4:  # Min størrelse msg
+                                root = flex.GetRoot(buffer)
+                                response_dict = root.Value
+
+                                buffer = b''
+                                await run_robot(response_dict, rvr)
+                                await asyncio.sleep(0.02)
+                        except socket.timeout:
                             continue
-                        if not chunk:
+                        except Exception as e:
+                            print(f"Error receiving data: {e}")
                             break
-
-                        buffer += chunk
-
-                        if len(buffer) >= 4:  # Min størrelse msg
-                            root = flex.GetRoot(buffer)
-                            response_dict = root.Value
-
-                            buffer = b''
-                            await run_robot(response_dict, rvr)
-                            await asyncio.sleep(0.02)
-                    except socket.timeout:
-                        continue
-                    except Exception as e:
-                        print(f"Error receiving data: {e}")
-                        break
-                await asyncio.sleep(0.03)
-    except Exception as e:
-        print(f"Connection error: {e}")
-        await asyncio.sleep(1)  # Wait before retrying connection
+                    await asyncio.sleep(0.03)
+        except Exception as e:
+            print(f"Connection error: {e}")
+            await asyncio.sleep(1)  # Wait before retrying connection
