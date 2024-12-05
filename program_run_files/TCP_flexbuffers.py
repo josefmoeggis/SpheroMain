@@ -25,7 +25,7 @@ async def pack_data(rot_data, acc_data, dist_data):
 
 
 
-async def run_robot(response_dict, rvr):
+async def run_robot(vertival_servo, response_dict, rvr):
     try:
         left_mode = response_dict['leftMode']
         left_speed = response_dict['leftSpeed']
@@ -49,6 +49,8 @@ async def run_robot(response_dict, rvr):
                 right_mode=right_mode,
                 right_duty_cycle=right_speed
             )
+
+        await vertival_servo.move_servo_position(0, servo2)
 
     except Exception as e:
         print(f"Error processing command: {e}")

@@ -3,6 +3,8 @@ import sys
 import camera_sensors as camsen
 import TCP_flexbuffers as com
 import socket
+import pi_servo_hat
+
 
 # USE THIS FILE AS BASE FOR MAIN IN FUTURE JOSEF
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
@@ -73,6 +75,8 @@ async def main():
     await asyncio.sleep(2)
     mux, tof1, tof2 = await camsen.dist_sensor_init()
     manager = camsen.IMUManager()
+    v_servo = pi_servo_hat.PiServoHat()
+    v_servo.restart()
     await rvr.sensor_control.add_sensor_data_handler(
         service=RvrStreamingServices.imu,
         handler=manager.imu_handler
