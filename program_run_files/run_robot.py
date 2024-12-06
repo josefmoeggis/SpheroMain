@@ -58,13 +58,21 @@ async def sensors(tof1, tof2, manager, host, port):
                         data_dict =  await com.pack_data(imu_rot, imu_acc, distance)
                         s.sendall(data_dict)
                         await asyncio.sleep(0.05)
+                    except (ConnectionResetError, ConnectionAbortedError, BrokenPipeError) as e:
+                        print(f"Sensors: Connection lost: {e}")
+                        break  # Break inner loop to trigger reconnection
+
                     except Exception as e:
-                        print("Couldn't send or get sensorvals")
-                        print(e)
+                        print(f"Sensors: Error reading or sending sensor data: {e}")
                         await asyncio.sleep(0.002)
-                        continue
+                        continue  # Continue trying to read/send if it's a temporary error
+
+            except (ConnectionRefusedError, socket.error) as e:
+                print(f"Sensors: Connection failed: {e}, retrying in 1 second...")
+                await asyncio.sleep(1)  # Wait before retrying connection
+
             except Exception as e:
-                print(f"Error unpacking response: {e}")
+                print(f"Sensors: Unexpected error: {e}, retrying in 1 second...")
                 await asyncio.sleep(1)
 
 

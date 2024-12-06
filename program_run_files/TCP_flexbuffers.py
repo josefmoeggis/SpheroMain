@@ -93,12 +93,15 @@ async def run_rx_client(rvr, host, port):
                                 buffer = b''
                                 await run_robot(response_dict, rvr)
                                 await asyncio.sleep(0.02)
-                        except socket.timeout:
-                            continue
+                        except (ConnectionResetError, ConnectionAbortedError) as e:
+                            print(f"Connection lost: {e}")
+                            break  # Break inner loop to trigger reconnection
                         except Exception as e:
-                            print(f"Error receiving data: {e}")
-                            break
-                    await asyncio.sleep(0.03)
-        except Exception as e:
-            print(f"Connection error: {e}")
+                            print(f"Error processing data: {e}")
+                            break  # Break inner loop on any other error
+        except (ConnectionRefusedError, socket.error) as e:
+            print(f"Connection failed: {e}, retrying in 1 second...")
             await asyncio.sleep(1)  # Wait before retrying connection
+        except Exception as e:
+            print(f"Unexpected error: {e}, retrying in 1 second...")
+            await asyncio.sleep(1) # Wait before retrying connection
