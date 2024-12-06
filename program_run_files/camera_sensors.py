@@ -7,7 +7,7 @@ from PIL import Image
 import io
 
 class SimpleBroadcaster:
-    def __init__(self, broadcast_ip='10.22.119.215', port=5000, width=320, height=240):
+    def __init__(self, broadcast_ip='10.22.119.215', port=5000, width=640, height=480):
         # Setup UDP socket for broadcasting
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
@@ -35,7 +35,7 @@ class SimpleBroadcaster:
 
                 # Convert to JPEG
                 buffer = io.BytesIO()
-                img.save(buffer, format='JPEG', quality=50)
+                img.save(buffer, format='JPEG', quality=40)
                 jpeg_data = buffer.getvalue()
 
                 self.sock.sendto(len(jpeg_data).to_bytes(4, 'big'), self.address)
