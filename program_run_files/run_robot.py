@@ -39,33 +39,32 @@ async def ToF_read(tof):
         print(e)
 
 async def sensors(tof1, tof2, manager, host, port):
-    while True:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            try:
-                s.connect((host, port))
-                while True:
-                    try:
-                        distance1, distance2, imu = await asyncio.gather(
-                            ToF_read(tof1),
-                            ToF_read(tof2),
-                            asyncio.to_thread(manager.get_latest_imu_data),
-                        )
-                        imu_rot_dict = imu['IMU']
-                        imu_rot = [imu_rot_dict['Roll'], imu_rot_dict['Pitch'], imu_rot_dict['Yaw']]
-                        imu_acc_dict = imu['Accelerometer']
-                        imu_acc = [imu_acc_dict['X'], imu_acc_dict['Y'], imu_acc_dict['Z']]
-                        distance = [distance1, distance2]
-                        data_dict =  await com.pack_data(imu_rot, imu_acc, distance)
-                        s.sendall(data_dict)
-                        await asyncio.sleep(0.05)
-                    except Exception as e:
-                        print("Couldn't send or get sensorvals")
-                        print(e)
-                        await asyncio.sleep(0.002)
-                        continue
-            except Exception as e:
-                print(f"Error unpacking response: {e}")
-                await asyncio.sleep(1)
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        try:
+            s.connect((host, port))
+            while True:
+                try:
+                    distance1, distance2, imu = await asyncio.gather(
+                        ToF_read(tof1),
+                        ToF_read(tof2),
+                        asyncio.to_thread(manager.get_latest_imu_data),
+                    )
+                    imu_rot_dict = imu['IMU']
+                    imu_rot = [imu_rot_dict['Roll'], imu_rot_dict['Pitch'], imu_rot_dict['Yaw']]
+                    imu_acc_dict = imu['Accelerometer']
+                    imu_acc = [imu_acc_dict['X'], imu_acc_dict['Y'], imu_acc_dict['Z']]
+                    distance = [distance1, distance2]
+                    data_dict =  await com.pack_data(imu_rot, imu_acc, distance)
+                    s.sendall(data_dict)
+                    await asyncio.sleep(0.05)
+                except Exception as e:
+                    print("Couldn't send or get sensorvals")
+                    print(e)
+                    await asyncio.sleep(0.002)
+                    continue
+        except Exception as e:
+            print(f"Error unpacking response: {e}")
+            await asyncio.sleep(1)
 
 
 
