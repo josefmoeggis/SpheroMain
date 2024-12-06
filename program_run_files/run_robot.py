@@ -28,15 +28,21 @@ rvr = SpheroRvrAsync(
 )
 
 async def ToF_read(tof):
-    try:
-        tof.start_ranging()
-        await asyncio.sleep(.005)
-        distance = tof.get_distance()
-        await asyncio.sleep(.005)
-        tof.stop_ranging()
-        return distance
-    except Exception as e:
-        print(e)
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            tof.start_ranging()
+            await asyncio.sleep(.005)
+            distance = tof.get_distance()
+            await asyncio.sleep(.005)
+            tof.stop_ranging()
+            return distance
+        except Exception as e:
+            print(f"ToF read error (attempt {attempt + 1}/{max_retries}): {e}")
+            if attempt < max_retries - 1:
+                await asyncio.sleep(0.01)  # Short delay between retries
+            else:
+                return 0
 
 async def sensors(tof1, tof2, manager, host, port):
     while True:
@@ -83,8 +89,8 @@ async def main():
     await asyncio.sleep(2)
     mux, tof1, tof2 = await camsen.dist_sensor_init()
     manager = camsen.IMUManager()
-    v_servo = pi_servo_hat.PiServoHat()
-    v_servo.restart()
+    servo = pi_servo_hat.PiServoHat()
+    servo.restart()
     await rvr.sensor_control.add_sensor_data_handler(
         service=RvrStreamingServices.imu,
         handler=manager.imu_handler
@@ -99,7 +105,7 @@ async def main():
 
     tasks = [
         asyncio.create_task(sensors(tof1, tof2, manager, HOST, PORT_TX)),
-        asyncio.create_task(com.run_rx_client(rvr, HOST, PORT_RX)),
+        asyncio.create_task(com.run_rx_client(servo, rvr, HOST, PORT_RX)),
         asyncio.create_task(cam.start())
     ]
     try:

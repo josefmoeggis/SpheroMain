@@ -25,7 +25,7 @@ async def pack_data(rot_data, acc_data, dist_data):
 
 
 
-async def run_robot(response_dict, rvr):
+async def run_robot(vertical_servo, response_dict, rvr):
     try:
         left_mode = response_dict['leftMode']
         left_speed = response_dict['leftSpeed']
@@ -50,7 +50,7 @@ async def run_robot(response_dict, rvr):
                 right_duty_cycle=right_speed
             )
 
-        #await vertival_servo.move_servo_position(0, servo2)
+        vertical_servo.move_servo_position(0, servo2)
 
     except Exception as e:
         print(f"Error processing command: {e}")
@@ -66,7 +66,7 @@ async def receive_with_timeout(socket, timeout=1.0):
     except asyncio.TimeoutError:
         return None
 
-async def run_rx_client(rvr, host, port):
+async def run_rx_client(v_servo, rvr, host, port):
     while True:
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -91,7 +91,7 @@ async def run_rx_client(rvr, host, port):
                                 response_dict = root.Value
 
                                 buffer = b''
-                                await run_robot(response_dict, rvr)
+                                await run_robot(v_servo, response_dict, rvr)
                                 await asyncio.sleep(0.02)
                         except (ConnectionResetError, ConnectionAbortedError) as e:
                             print(f"Connection lost: {e}")
