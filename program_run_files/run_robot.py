@@ -6,7 +6,6 @@ import socket
 import pi_servo_hat
 
 
-# USE THIS FILE AS BASE FOR MAIN IN FUTURE JOSEF
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
 
 import asyncio
@@ -27,23 +26,6 @@ rvr = SpheroRvrAsync(
     )
 )
 
-async def ToF_read(tof):
-    max_retries = 3
-    for attempt in range(max_retries):
-        try:
-            tof.start_ranging()
-            await asyncio.sleep(.005)
-            distance = tof.get_distance()
-            await asyncio.sleep(.005)
-            tof.stop_ranging()
-            return distance
-        except Exception as e:
-            print(f"ToF read error (attempt {attempt + 1}/{max_retries}): {e}")
-            if attempt < max_retries - 1:
-                await asyncio.sleep(0.01)  # Short delay between retries
-            else:
-                return 0
-
 async def sensors(tof1, tof2, manager, host, port):
     while True:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -52,8 +34,8 @@ async def sensors(tof1, tof2, manager, host, port):
                 while True:
                     try:
                         distance1, distance2, imu = await asyncio.gather(
-                            ToF_read(tof1),
-                            ToF_read(tof2),
+                            camsen.ToF_read(tof1),
+                            camsen.ToF_read(tof2),
                             asyncio.to_thread(manager.get_latest_imu_data),
                         )
                         imu_rot_dict = imu['IMU']
@@ -132,7 +114,7 @@ async def main():
 
 
 
-
+# This loop is mainly the same as from camera stream asyncio example: https://github.com/sphero-inc/sphero-sdk-raspberrypi-python
 if __name__ == '__main__':
     try:
         asyncio.ensure_future(

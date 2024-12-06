@@ -6,6 +6,7 @@ import asyncio
 import time
 import numpy as np
 
+# Just for building flexbuffer msg
 async def pack_data(rot_data, acc_data, dist_data):
     builder = flex.Builder()
     try:
@@ -24,7 +25,7 @@ async def pack_data(rot_data, acc_data, dist_data):
         print(e)
 
 
-
+# Running RVR
 async def run_robot(vertical_servo, response_dict, rvr):
     try:
         left_mode = response_dict['leftMode']
@@ -55,6 +56,7 @@ async def run_robot(vertical_servo, response_dict, rvr):
     except Exception as e:
         print(f"Error processing command: {e}")
 
+
 async def receive_with_timeout(socket, timeout=1.0):
     try:
         # Convert the blocking socket receive to an async operation
@@ -66,6 +68,8 @@ async def receive_with_timeout(socket, timeout=1.0):
     except asyncio.TimeoutError:
         return None
 
+
+# Only exported function to run_robot
 async def run_rx_client(v_servo, rvr, host, port):
     while True:
         try:

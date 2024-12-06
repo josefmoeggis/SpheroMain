@@ -6,6 +6,7 @@ import socket
 from PIL import Image
 import io
 
+#------------------------------------------ Camera class used through run_robot -----------------------------------
 class SimpleBroadcaster:
     def __init__(self, broadcast_ip='10.22.119.215', port=5000, width=640, height=480):
         # Setup UDP socket for broadcasting
@@ -17,7 +18,7 @@ class SimpleBroadcaster:
         # Setup camera
         self.camera = Picamera2()
         self.camera.configure(self.camera.create_preview_configuration(
-            main={"size": (width, height), "format": "RGB888"},  # Specify RGB format
+            main={"size": (width, height), "format": "RGB888"},
             raw={"size": (width, height)}
         ))
 
@@ -27,11 +28,9 @@ class SimpleBroadcaster:
 
         try:
             while True:
-                # Capture frame
                 frame = self.camera.capture_array()
 
-                # Convert to PIL Image and ensure RGB mode
-                img = Image.fromarray(frame, 'RGB')  # Specify RGB mode
+                img = Image.fromarray(frame, 'RGB')  # Specify RGB mode problematic if not
 
                 # Convert to JPEG
                 buffer = io.BytesIO()
@@ -56,7 +55,7 @@ class SimpleBroadcaster:
             self.sock.close()
 
 
-
+#--------------------------------------------- ToF sensor stuff -----------------------------------------------------
 async def dist_sensor_init():
     mux = qwiic_tca9548a.QwiicTCA9548A(address=0x70)
     await asyncio.sleep(.1)
@@ -82,24 +81,31 @@ async def dist_sensor_init():
     if ToF.sensor_init() == 0:            # Begin returns 0 on a good init
         print("Sensor 1 online!\n")
 
-    if ToF2.sensor_init() == 0:            # Begin returns 0 on a good init
+    if ToF2.sensor_init() == 0:
         print("Sensor 2 online!\n")
 
     return mux, ToF, ToF2
 
 
 async def ToF_read(tof):
-    try:
-        tof.start_ranging()
-        await asyncio.sleep(.005)
-        distance = tof.get_distance()    # Get the result of the measurement from the sensor
-        await asyncio.sleep(.005)
-        tof.stop_ranging()
-        return distance
-    except Exception as e:
-        print(e)
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            tof.start_ranging()
+            await asyncio.sleep(.005)
+            distance = tof.get_distance()
+            await asyncio.sleep(.005)
+            tof.stop_ranging()
+            return distance
+        except Exception as e:
+            print(f"ToF read error (attempt {attempt + 1}/{max_retries}): {e}")
+            if attempt < max_retries - 1:
+                await asyncio.sleep(0.01)
+            else:
+                return 0
 
 
+#------------------------------------------ Handler to get values from IMU ----------------------------------------
 class IMUManager:
     def __init__(self):
         self.latest_imu_data = {'IMU': {'Pitch': 0.0, 'Roll': 0.0, 'Yaw': 0.0}}
