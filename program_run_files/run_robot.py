@@ -84,37 +84,51 @@ async def sensors(tof1, tof2, manager, host, port):
 
 
 async def main():
-    cam = camsen.SimpleBroadcaster(broadcast_ip=HOST)
-    await rvr.wake()
-    await asyncio.sleep(2)
-    mux, tof1, tof2 = await camsen.dist_sensor_init()
-    manager = camsen.IMUManager()
-    servo = pi_servo_hat.PiServoHat()
-    servo.restart()
-    await rvr.sensor_control.add_sensor_data_handler(
-        service=RvrStreamingServices.imu,
-        handler=manager.imu_handler
-    )
-    await asyncio.sleep(0.1)
-    await rvr.sensor_control.add_sensor_data_handler(
-        service=RvrStreamingServices.accelerometer,
-        handler=manager.accelerometer_handler
-    )
-    await asyncio.sleep(0.1)
-    await rvr.sensor_control.start(interval=250)
+    while True:  # Add outer loop to keep restarting tasks
+        try:
+            cam = camsen.SimpleBroadcaster(broadcast_ip=HOST)
+            await rvr.wake()
+            await asyncio.sleep(2)
+            mux, tof1, tof2 = await camsen.dist_sensor_init()
+            manager = camsen.IMUManager()
+            servo = pi_servo_hat.PiServoHat()
+            servo.restart()
+            await rvr.sensor_control.add_sensor_data_handler(
+                service=RvrStreamingServices.imu,
+                handler=manager.imu_handler
+            )
+            await asyncio.sleep(0.1)
+            await rvr.sensor_control.add_sensor_data_handler(
+                service=RvrStreamingServices.accelerometer,
+                handler=manager.accelerometer_handler
+            )
+            await asyncio.sleep(0.1)
+            await rvr.sensor_control.start(interval=250)
 
-    tasks = [
-        asyncio.create_task(sensors(tof1, tof2, manager, HOST, PORT_TX)),
-        asyncio.create_task(com.run_rx_client(servo, rvr, HOST, PORT_RX)),
-        asyncio.create_task(cam.start())
-    ]
-    try:
-        await asyncio.gather(*tasks)
-    except KeyboardInterrupt:
-        for task in tasks:
-            task.cancel()
-        await asyncio.gather(*tasks, return_exceptions=True)
-        print("Tasks cancelled")
+            tasks = [
+                asyncio.create_task(sensors(tof1, tof2, manager, HOST, PORT_TX)),
+                asyncio.create_task(com.run_rx_client(servo, rvr, HOST, PORT_RX)),
+                asyncio.create_task(cam.start())
+            ]
+
+            done, pending = await asyncio.wait(
+                tasks,
+                return_when=asyncio.FIRST_COMPLETED
+            )
+
+            # Cancel remaining tasks
+            for task in pending:
+                task.cancel()
+
+            # Wait for cancellation to complete
+            await asyncio.gather(*pending, return_exceptions=True)
+
+            print("Tasks ended, restarting in 1 second...")
+            await asyncio.sleep(1)
+
+        except Exception as e:
+            print(f"Main loop error: {e}")
+            await asyncio.sleep(1)
 
 
 
