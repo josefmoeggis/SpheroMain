@@ -25,7 +25,7 @@ async def pack_data(rot_data, acc_data, dist_data):
 
 
 
-async def run_robot(vertival_servo, response_dict, rvr):
+async def run_robot(response_dict, rvr):
     try:
         left_mode = response_dict['leftMode']
         left_speed = response_dict['leftSpeed']
